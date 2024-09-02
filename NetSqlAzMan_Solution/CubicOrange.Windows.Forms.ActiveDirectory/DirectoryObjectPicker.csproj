@@ -1,14 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <ProjectType>Local</ProjectType>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{AD25BE24-8A42-44E0-9588-3767F572C338}</ProjectGuid>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ApplicationIcon>
-    </ApplicationIcon>
     <AssemblyKeyContainerName>
     </AssemblyKeyContainerName>
     <AssemblyName>CubicOrange.Windows.Forms.ActiveDirectory</AssemblyName>
@@ -22,17 +15,11 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <StartupObject>
     </StartupObject>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>3.5</OldToolsVersion>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <IsWebBootstrapper>true</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <SignAssembly>true</SignAssembly>
     <PublishUrl>http://localhost/CubicOrange.Windows.Forms.ActiveDirectory/</PublishUrl>
     <Install>true</Install>
@@ -48,100 +35,60 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug\</OutputPath>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
-    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DocumentationFile>bin\Debug\CubicOrange.Windows.Forms.ActiveDirectory.XML</DocumentationFile>
-    <DebugSymbols>true</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
     <NoStdLib>false</NoStdLib>
     <NoWarn>
     </NoWarn>
-    <Optimize>false</Optimize>
     <RegisterForComInterop>false</RegisterForComInterop>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
-    <DebugType>full</DebugType>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release\</OutputPath>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
-    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
-    <DefineConstants>TRACE</DefineConstants>
     <DocumentationFile>bin\Release\CubicOrange.Windows.Forms.ActiveDirectory.XML</DocumentationFile>
-    <DebugSymbols>false</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
     <NoStdLib>false</NoStdLib>
     <NoWarn>
     </NoWarn>
-    <Optimize>true</Optimize>
     <RegisterForComInterop>false</RegisterForComInterop>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningLevel>4</WarningLevel>
     <DebugType>none</DebugType>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.ActiveDs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=fa06657db59055d7, processorArchitecture=MSIL" />
-    <Reference Include="System">
+    <Reference Update="System">
       <Name>System</Name>
     </Reference>
-    <Reference Include="System.Core">
+    <Reference Update="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data">
+    <Reference Update="System.Data">
       <Name>System.Data</Name>
     </Reference>
-    <Reference Include="System.Drawing">
+    <Reference Update="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
-    <Reference Include="System.Windows.Forms">
-      <Name>System.Windows.Forms</Name>
-    </Reference>
-    <Reference Include="System.Xml">
+    <Reference Update="System.Xml">
       <Name>System.XML</Name>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DirectoryObject.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ComInterop.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="DirectoryObjectPickerDialog.cs">
+    <Compile Update="DirectoryObjectPickerDialog.cs">
       <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="NameTranslator.cs" />
-    <Compile Include="ObjectTypes.cs" />
-    <Compile Include="Locations.cs" />
-    <Compile Include="PInvoke.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="StructsFlags.cs">
-      <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Interop\Interop.ActiveDs.dll" />
     <Content Include="Interop\ReadMe.txt" />
     <Content Include="Licence.txt" />
   </ItemGroup>
@@ -172,15 +119,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="DirectoryObjectPicker.pfx" />
-    <None Include="Interop\Interop.ActiveDs.dll.snk" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <AssemblyTitle>Directory Object Picker common dialog</AssemblyTitle>
+    <Description>.NET SQL Authorization Manager</Description>
+    <Product>Directory Object Picker</Product>
+    <Copyright>© 2004 Armand du Plessis &lt;armand%40dotnet.org.za&gt;</Copyright>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
   </PropertyGroup>
 </Project>
