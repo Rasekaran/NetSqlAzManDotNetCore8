@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 
 namespace NetSqlAzMan.Cache
 {
@@ -320,7 +320,7 @@ namespace NetSqlAzMan.Cache
             var dummy7 = newStorage.LogErrors;
             //Clean Biz Rule Assembly Cache
             SqlAzManItem.ClearBizRuleAssemblyCache();
-            NetSqlAzManStorageDataContext db = newStorage.db;
+            NetSqlAzManStorageContext db = newStorage.db;
             newStorage.OpenConnection();
             try
             {

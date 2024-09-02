@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Principal;
 using System.Threading;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 
 namespace NetSqlAzMan.Cache
 {

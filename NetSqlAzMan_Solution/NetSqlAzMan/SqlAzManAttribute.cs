@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 
 namespace NetSqlAzMan
 {
@@ -16,10 +16,10 @@ namespace NetSqlAzMan
     {
         #region Fields
         /// <summary>
-        /// NetSqlAzManStorageDataContext object reference
+        /// NetSqlAzManStorageContext object reference
         /// </summary>
         [NonSerialized()]
-        protected NetSqlAzManStorageDataContext db;
+        protected NetSqlAzManStorageContext db;
         /// <summary>
         /// Attribute Id
         /// </summary>
@@ -85,7 +85,7 @@ namespace NetSqlAzMan
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <param name="ens">The ens.</param>
-        protected internal SqlAzManAttribute(NetSqlAzManStorageDataContext db, OWNER owner, int attributeId, string key, string value, SqlAzManENS ens)
+        protected internal SqlAzManAttribute(NetSqlAzManStorageContext db, OWNER owner, int attributeId, string key, string value, SqlAzManENS ens)
         {
             this.db = db;
             this.owner = owner;

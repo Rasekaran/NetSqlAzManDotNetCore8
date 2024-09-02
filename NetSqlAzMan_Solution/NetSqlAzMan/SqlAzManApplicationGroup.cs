@@ -9,7 +9,7 @@ using System.Xml;
 using NetSqlAzMan.DirectoryServices;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 
 namespace NetSqlAzMan
 {
@@ -22,7 +22,7 @@ namespace NetSqlAzMan
     {
         #region Fields
         [NonSerialized()]
-        private NetSqlAzManStorageDataContext db;
+        private NetSqlAzManStorageContext db;
         private IAzManApplication application;
         private int applicationGroupId;
         private IAzManSid sid;
@@ -84,7 +84,7 @@ namespace NetSqlAzMan
         }
         #endregion Private Event Raisers
         #region Constructors
-        internal SqlAzManApplicationGroup(NetSqlAzManStorageDataContext db, IAzManApplication application, int applicationGroupId, IAzManSid sid, string name, string description, string lDapQuery, GroupType groupType, SqlAzManENS ens)
+        internal SqlAzManApplicationGroup(NetSqlAzManStorageContext db, IAzManApplication application, int applicationGroupId, IAzManSid sid, string name, string description, string lDapQuery, GroupType groupType, SqlAzManENS ens)
         {
             this.db = db;
             this.application = application;

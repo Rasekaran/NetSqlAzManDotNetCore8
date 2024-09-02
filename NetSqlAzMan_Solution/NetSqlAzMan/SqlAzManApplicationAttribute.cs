@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 
 namespace NetSqlAzMan
 {
@@ -14,7 +14,7 @@ namespace NetSqlAzMan
     public sealed partial class SqlAzManApplicationAttribute : SqlAzManAttribute<IAzManApplication>
     {
         #region Constructors
-        internal SqlAzManApplicationAttribute(NetSqlAzManStorageDataContext db, IAzManApplication owner, int attributeId, string key, string value, SqlAzManENS ens)
+        internal SqlAzManApplicationAttribute(NetSqlAzManStorageContext db, IAzManApplication owner, int attributeId, string key, string value, SqlAzManENS ens)
             : base(db, owner, attributeId, key, value, ens)
         {
 

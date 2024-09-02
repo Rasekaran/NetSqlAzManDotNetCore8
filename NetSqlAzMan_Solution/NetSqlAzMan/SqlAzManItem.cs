@@ -12,7 +12,7 @@ using System.Xml;
 using NetSqlAzMan.DirectoryServices;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 using NetSqlAzMan.Utilities;
 
 
@@ -27,7 +27,7 @@ namespace NetSqlAzMan
     {
         #region Fields
         [NonSerialized()]
-        internal NetSqlAzManStorageDataContext db;
+        internal NetSqlAzManStorageContext db;
         private int itemId;
         private ItemType itemType;
         private IAzManApplication application;
@@ -139,7 +139,7 @@ namespace NetSqlAzMan
         }
         #endregion Private Event Raisers
         #region Constructors
-        internal SqlAzManItem(NetSqlAzManStorageDataContext db, IAzManApplication application, int itemId, string name, string description, ItemType itemType, string bizRule, BizRuleSourceLanguage? bizRuleScriptLanguage, SqlAzManENS ens)
+        internal SqlAzManItem(NetSqlAzManStorageContext db, IAzManApplication application, int itemId, string name, string description, ItemType itemType, string bizRule, BizRuleSourceLanguage? bizRuleScriptLanguage, SqlAzManENS ens)
         {
             this.db = db;
             this.itemId = itemId;

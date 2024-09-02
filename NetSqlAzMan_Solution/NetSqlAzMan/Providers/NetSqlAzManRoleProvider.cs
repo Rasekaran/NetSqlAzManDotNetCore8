@@ -12,6 +12,21 @@ using System.Linq;
 
 namespace NetSqlAzMan.Providers
 {
+    public abstract class RoleProvider : ProviderBase
+    {
+        public abstract string[] GetRolesForUser(string username);
+        public abstract void CreateRole(string roleName);
+        public abstract bool DeleteRole(string roleName, bool throwOnPopulatedRole);
+        public abstract bool RoleExists(string roleName);
+        public abstract void AddUsersToRoles(string[] usernames, string[] roleNames);
+        public abstract void RemoveUsersFromRoles(string[] usernames, string[] roleNames);
+        public abstract string[] GetUsersInRole(string roleName);
+        public abstract string[] GetAllRoles();
+        public abstract string[] FindUsersInRole(string roleName, string usernameToMatch);
+        public abstract string ApplicationName { get; set; }
+        public abstract bool IsUserInRole(string username, string roleName);
+    }
+
     /// <summary>
     /// ASP.NET Role Provider for .NET Sql Authorization Manager.
     /// </summary>

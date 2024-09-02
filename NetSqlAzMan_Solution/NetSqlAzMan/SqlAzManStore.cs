@@ -8,7 +8,7 @@ using System.Security.Principal;
 using System.Xml;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 using NetSqlAzMan.Utilities;
 
 namespace NetSqlAzMan
@@ -22,7 +22,7 @@ namespace NetSqlAzMan
     {
         #region Fields
         [NonSerialized()]
-        private NetSqlAzManStorageDataContext db;
+        private NetSqlAzManStorageContext db;
         private int storeId;
         private string name;
         private string description;
@@ -121,7 +121,7 @@ namespace NetSqlAzMan
         }
         #endregion Private Event Raisers
         #region Constructors
-        internal SqlAzManStore(NetSqlAzManStorageDataContext db, IAzManStorage storage, int storeId, string name, string description, byte netsqlazmanFixedServerRole, SqlAzManENS ens)
+        internal SqlAzManStore(NetSqlAzManStorageContext db, IAzManStorage storage, int storeId, string name, string description, byte netsqlazmanFixedServerRole, SqlAzManENS ens)
         {
             this.db = db;
             this.storage = storage;

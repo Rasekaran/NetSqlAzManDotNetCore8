@@ -7,7 +7,7 @@ using System.Xml;
 using NetSqlAzMan.DirectoryServices;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 
 namespace NetSqlAzMan
 {
@@ -20,7 +20,7 @@ namespace NetSqlAzMan
     {
         #region Fields
         [NonSerialized()]
-        private NetSqlAzManStorageDataContext db;
+        private NetSqlAzManStorageContext db;
         private int authorizationId;
         private IAzManItem item;
         private IAzManSid owner;
@@ -66,7 +66,7 @@ namespace NetSqlAzMan
         }
         #endregion Private Event Raisers
         #region Constructors
-        internal SqlAzManAuthorization(NetSqlAzManStorageDataContext db, IAzManItem item, int authorizationId, IAzManSid owner, WhereDefined ownerSidWhereDefined, IAzManSid sid, WhereDefined objectSidWhereDefined, AuthorizationType authorizationType, DateTime? validFrom, DateTime? validTo, SqlAzManENS ens)
+        internal SqlAzManAuthorization(NetSqlAzManStorageContext db, IAzManItem item, int authorizationId, IAzManSid owner, WhereDefined ownerSidWhereDefined, IAzManSid sid, WhereDefined objectSidWhereDefined, AuthorizationType authorizationType, DateTime? validFrom, DateTime? validTo, SqlAzManENS ens)
         {
             this.db = db;
             this.authorizationId = authorizationId;

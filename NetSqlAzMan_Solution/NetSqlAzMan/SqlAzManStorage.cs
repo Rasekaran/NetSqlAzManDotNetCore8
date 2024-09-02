@@ -15,8 +15,11 @@ using System.Xml;
 using NetSqlAzMan.DirectoryServices;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 using NetSqlAzMan.Logging;
+using NetSqlAzMan.Database;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 
 namespace NetSqlAzMan
 {
@@ -84,7 +87,7 @@ namespace NetSqlAzMan
         #endregion Sub-Classes
         #region Fields
         [NonSerialized()]
-        internal NetSqlAzManStorageDataContext db;
+        internal NetSqlAzManStorageContext db;
         private string connectionString;
         private NetSqlAzManMode? mode;
         private bool? logErrors = null;
@@ -194,7 +197,7 @@ namespace NetSqlAzMan
         [System.Runtime.Serialization.OnDeserialized()]
         private void OnDeserialized(StreamingContext context)
         {
-            this.db = new NetSqlAzManStorageDataContext(this.ConnectionString);
+            this.db = new NetSqlAzManStorageContext(this.ConnectionString);
             this.logging = new LoggingUtility();
         }
         [System.Runtime.Serialization.OnSerializing()]
@@ -274,24 +277,24 @@ namespace NetSqlAzMan
         {
             get
             {
-                return this.db.CommandTimeout;
+                return (int)this.db.Database.GetCommandTimeout();
             }
             set
             {
-                this.db.CommandTimeout = value;
+                this.db.Database.SetCommandTimeout( value );
             }
         }
         /// <summary>
         /// Gets the database vesion.
         /// </summary>
         /// <value>The database vesion.</value>
-        public string DatabaseVesion
-        {
-            get
-            {
-                return this.db.NetSqlAzMan_DBVersion();
-            }
-        }
+        //public string DatabaseVesion
+        //{
+        //    get
+        //    {
+        //        return this.db.NetSqlAzMan_DBVersion();
+        //    }
+        //}
         /// <summary>
         /// Gets the DB users.
         /// </summary>
@@ -335,10 +338,10 @@ namespace NetSqlAzMan
         /// </summary>
         public void OpenConnection()
         {
-            this.backupConnectionState = this.db.Connection.State;
+            this.backupConnectionState = this.db.Database.GetDbConnection().State;
             if (this.backupConnectionState == ConnectionState.Closed)
             {
-                this.db.Connection.Open();
+                this.db.Database.OpenConnection();
             }
         }
         /// <summary>
@@ -346,21 +349,21 @@ namespace NetSqlAzMan
         /// </summary>
         public void CloseConnection()
         {
-            if (this.db.Connection.State == ConnectionState.Open && this.backupConnectionState == ConnectionState.Closed)
+            if (this.db.Database.GetDbConnection().State == ConnectionState.Open && this.backupConnectionState == ConnectionState.Closed)
             {
-                this.db.Connection.Close();
+                this.db.Database.CloseConnection();
             }
         }
         /// <summary>
         /// Verifies if the database is a valid NetSqlAzMan Storage DB.
         /// </summary>
-        public static void VerifyStorageDB(string connectionString)
-        {
-            using (NetSqlAzManStorageDataContext db = new NetSqlAzManStorageDataContext(connectionString))
-            {
-                db.AuthorizationAttributes().Any();
-            }
-        }
+        //public static void VerifyStorageDB(string connectionString)
+        //{
+        //    using (NetSqlAzManStorageContext db = new NetSqlAzManStorageContext(connectionString))
+        //    {
+        //        db.AuthorizationAttributes().Any();
+        //    }
+        //}
         /// <summary>
         /// Gets or sets the connection string.
         /// </summary>
@@ -378,8 +381,8 @@ namespace NetSqlAzMan
                 if (!scsb.IntegratedSecurity)
                     scsb.PersistSecurityInfo = true;
                 this.connectionString = scsb.ToString();
-                this.db = new NetSqlAzManStorageDataContext(this.connectionString);
-                this.db.CommandTimeout = this.StorageTimeOut;
+                this.db = new NetSqlAzManStorageContext(this.connectionString);
+                this.db.Database.SetCommandTimeout(this.StorageTimeOut);
             }
         }
 
@@ -387,7 +390,7 @@ namespace NetSqlAzMan
         {
             get
             {
-                return (SqlConnection)this.db.Connection;
+                return (SqlConnection)this.db.Database.GetDbConnection();
             }
         }
         /// <summary>
@@ -397,10 +400,10 @@ namespace NetSqlAzMan
         /// <returns></returns>
         public IAzManStore GetStore(string storeName)
         {
-            StoresResult sr;
-            if ((sr = (from t in this.db.Stores() where t.Name == storeName select t).FirstOrDefault()) != null)
+            NetsqlazmanStoresTable sr;
+            if ((sr = (from t in this.db.NetsqlazmanStoresTables where t.Name == storeName select t).FirstOrDefault()) != null)
             {
-                int storeId = sr.StoreId.Value;
+                int storeId = sr.StoreId;
                 string name = sr.Name;
                 string description = sr.Description;
                 byte netsqlazmanFixedServerRole = 0;

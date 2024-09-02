@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
-using NetSqlAzMan.LINQ;
+using NetSqlAzMan.Database;
 
 namespace NetSqlAzMan
 {
@@ -16,7 +16,7 @@ namespace NetSqlAzMan
     {
         #region Fields
         [NonSerialized()]
-        private NetSqlAzManStorageDataContext db;
+        private NetSqlAzManStorageContext db;
         private int storeGroupMemberId;
         private IAzManStoreGroup storeGroup;
         private IAzManSid sid;
@@ -39,7 +39,7 @@ namespace NetSqlAzMan
         }
         #endregion Private Event Raisers
         #region Constructors
-        internal SqlAzManStoreGroupMember(NetSqlAzManStorageDataContext db, IAzManStoreGroup storeGroup, int storeGroupMemberId, IAzManSid sid, WhereDefined whereDefined, bool isMember, SqlAzManENS ens)
+        internal SqlAzManStoreGroupMember(NetSqlAzManStorageContext db, IAzManStoreGroup storeGroup, int storeGroupMemberId, IAzManSid sid, WhereDefined whereDefined, bool isMember, SqlAzManENS ens)
         {
             this.db = db;
             this.storeGroup = storeGroup;
