@@ -5,7 +5,7 @@ using System.Security.Permissions;
 using System.Collections.Specialized;
 using System.Collections.Generic;
 using System.Configuration.Provider;
-using System.Web.Security;
+//using System.Web.Security;
 using NetSqlAzMan.Interfaces;
 using NetSqlAzMan.Cache;
 using System.Linq;

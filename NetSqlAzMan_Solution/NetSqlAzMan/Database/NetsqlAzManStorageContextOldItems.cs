@@ -139,7 +139,7 @@ namespace NetSqlAzMan.Database
     public partial class GetDBUsersResult
     {
 
-        private SqlBinary _DBUserSid;
+        private byte[] _DBUserSid;
 
         private string _DBUserName;
 
@@ -147,7 +147,7 @@ namespace NetSqlAzMan.Database
         {
         }
 
-        public SqlBinary DBUserSid
+        public byte[] DBUserSid
         {
             get
             {

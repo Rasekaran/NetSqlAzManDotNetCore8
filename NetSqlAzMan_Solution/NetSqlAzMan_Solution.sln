@@ -28,7 +28,7 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "NetSqlAzManSetup_x86", "Net
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetSqlAzMan_WinPerformanceTest", "NetSqlAzMan_WinPerformanceTest\NetSqlAzMan_WinPerformanceTest.csproj", "{D59D5618-B937-46ED-AC6A-E94EB3C2CA6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetSqlAzMan_Test", "NetSqlAzMan_Test\NetSqlAzMan_Test.csproj", "{8D76B38B-9BE6-41B3-8FE5-1E3D1370956F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetSqlAzMan_Test", "NetSqlAzMan_Test\NetSqlAzMan_Test.csproj", "{8D76B38B-9BE6-41B3-8FE5-1E3D1370956F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetSqlAzMan_vs_AzMan_StressTest", "NetSqlAzMan_vs_AzMan_StressTest_Solution\NetSqlAzMan_vs_AzMan_StressTest\NetSqlAzMan_vs_AzMan_StressTest.csproj", "{A23A5C74-2D76-4628-87D2-DB4C1EAD9932}"
 EndProject

@@ -611,8 +611,8 @@
             <param name="dBUserName">Name of the d B user.</param>
             <returns></returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.CreateDelegate(System.Int32,System.Data.SqlTypes.SqlBinary,System.Byte,System.Data.SqlTypes.SqlBinary,System.Byte,System.Byte,System.DateTime,System.DateTime,System.Int32@)" -->
-        <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.GetNameFromSid(System.String,System.String,System.Data.SqlTypes.SqlBinary,System.Byte)" -->
+        <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.CreateDelegate(System.Int32,System.Byte[],System.Byte,System.Byte[],System.Byte,System.Byte,System.DateTime,System.DateTime,System.Int32@)" -->
+        <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.GetNameFromSid(System.String,System.String,System.Byte[],System.Byte)" -->
         <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.GrantApplicationAccess(System.Int32,System.String,System.Byte)" -->
         <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.ItemAttributeDelete(System.Int32,System.Int32)" -->
         <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.NetSqlAzMan_DBVersion" -->
@@ -6290,6 +6290,11 @@
         <member name="M:NetSqlAzMan.SqlAzManStorage.CloseConnection">
             <summary>
             Closes the connection.
+            </summary>
+        </member>
+        <member name="M:NetSqlAzMan.SqlAzManStorage.VerifyStorageDB(System.String)">
+            <summary>
+            Verifies if the database is a valid NetSqlAzMan Storage DB.
             </summary>
         </member>
         <member name="P:NetSqlAzMan.SqlAzManStorage.ConnectionString">

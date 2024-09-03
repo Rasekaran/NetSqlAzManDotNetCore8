@@ -4,7 +4,8 @@ using System.Diagnostics;
 using System.Security.Principal;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NetSqlAzMan.Cache;
-using NetSqlAzMan.Interfaces;
+using NetSqlAzMan_Test.sr;
+//using NetSqlAzMan.Interfaces;
 
 namespace NetSqlAzMan_Test
 {

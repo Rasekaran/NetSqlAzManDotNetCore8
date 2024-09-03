@@ -198,7 +198,7 @@ namespace NetSqlAzMan
         [System.Runtime.Serialization.OnDeserialized()]
         private void OnDeserialized(StreamingContext context)
         {
-            this.db = new NetSqlAzManStorageContext();
+            this.db = GetNetSqlAzManStorageContext();
             this.logging = new LoggingUtility();
         }
         [System.Runtime.Serialization.OnSerializing()]
@@ -358,13 +358,13 @@ namespace NetSqlAzMan
         /// <summary>
         /// Verifies if the database is a valid NetSqlAzMan Storage DB.
         /// </summary>
-        //public static void VerifyStorageDB(string connectionString)
-        //{
-        //    using (NetSqlAzManStorageContext db = new NetSqlAzManStorageContext(connectionString))
-        //    {
-        //        db.AuthorizationAttributes().Any();
-        //    }
-        //}
+        public static void VerifyStorageDB(string connectionString)
+        {
+            using (NetSqlAzManStorageContext db = NetSqlAzManStorageContext.CreateNetSqlAzManStorageContext(connectionString))
+            {
+                db.NetsqlazmanAuthorizationAttributesTables.Any();
+            }
+        }
         /// <summary>
         /// Gets or sets the connection string.
         /// </summary>
@@ -382,7 +382,7 @@ namespace NetSqlAzMan
                 if (!scsb.IntegratedSecurity)
                     scsb.PersistSecurityInfo = true;
                 this.connectionString = scsb.ToString();
-                this.db = new NetSqlAzManStorageContext();
+                this.db = GetNetSqlAzManStorageContext();
                 this.db.Database.SetCommandTimeout(this.StorageTimeOut);
             }
         }
@@ -1934,5 +1934,10 @@ namespace NetSqlAzMan
             logging.WriteInfo(this, String.Format("ENS Event: {0}\r\n\r\nOwner Store: {1}\r\nApplication Created: {2}\r\n", "ApplicationCreated", store.ToString(), applicationCreated));
         }
         #endregion ENS Subscription
+
+        protected NetSqlAzManStorageContext GetNetSqlAzManStorageContext()
+        {
+            return NetSqlAzManStorageContext.CreateNetSqlAzManStorageContext(this.connectionString);
+        }
     }
 }

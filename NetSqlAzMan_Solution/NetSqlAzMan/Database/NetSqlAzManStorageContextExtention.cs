@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 
 namespace NetSqlAzMan.Database
@@ -20,6 +21,13 @@ namespace NetSqlAzMan.Database
     /// </summary>
     public partial class NetSqlAzManStorageContext
     {
+        public static NetSqlAzManStorageContext CreateNetSqlAzManStorageContext(string connectionString)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<NetSqlAzManStorageContext>();
+            optionsBuilder.UseSqlServer(connectionString);
+            return new NetSqlAzManStorageContext(optionsBuilder.Options);
+        }
+
         private static Dictionary<KeyValuePair<string, string>, int?> dbUsersCheckSum = new Dictionary<KeyValuePair<string, string>, int?>();
         /// <summary>
         /// Gets the DB users ex.
@@ -150,7 +158,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int ApplicationGroupInsert( int applicationId, SqlBinary objectSid, string name, string description, string lDapQuery, byte groupType)
+        public int ApplicationGroupInsert( int applicationId, byte[] objectSid, string name, string description, string lDapQuery, byte groupType)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_ApplicationGroupInsert {applicationId}, {objectSid}, {name}, {description}, {lDapQuery}, {groupType}"
@@ -192,7 +200,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int ApplicationGroupMemberInsert(int applicationGroupId, SqlBinary objectSid, byte whereDefined, bool isMember, int applicationId)
+        public int ApplicationGroupMemberInsert(int applicationGroupId, byte[] objectSid, byte whereDefined, bool isMember, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_ApplicationGroupMemberInsert {applicationGroupId}, {objectSid}, {whereDefined}, {isMember}, {applicationId}"
@@ -220,7 +228,7 @@ namespace NetSqlAzMan.Database
         //    return this.CreateMethodCallQuery<ApplicationGroupMembersResult>(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())));
         //}
 
-        public int ApplicationGroupMemberUpdate(int applicationGroupId, SqlBinary objectSid, byte whereDefined, bool isMember, int original_ApplicationGroupMemberId, int applicationId)
+        public int ApplicationGroupMemberUpdate(int applicationGroupId, byte[] objectSid, byte whereDefined, bool isMember, int original_ApplicationGroupMemberId, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_ApplicationGroupMemberUpdate {applicationGroupId}, {objectSid}, {whereDefined}, {isMember}, {original_ApplicationGroupMemberId}, {applicationId}"
@@ -249,7 +257,7 @@ namespace NetSqlAzMan.Database
         //    return this.CreateMethodCallQuery<ApplicationGroupsResult>(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())));
         //}
 
-        public int ApplicationGroupUpdate( SqlBinary objectSid, string name, string description, string lDapQuery, byte groupType, int original_ApplicationGroupId, int applicationId)
+        public int ApplicationGroupUpdate( byte[] objectSid, string name, string description, string lDapQuery, byte groupType, int original_ApplicationGroupId, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_ApplicationGroupUpdate {objectSid}, {name}, {description}, {lDapQuery}, {groupType}, {original_ApplicationGroupId}, {applicationId}"
@@ -452,7 +460,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int AuthorizationInsert(int itemId, SqlBinary ownerId, byte ownerSidWhereDefined, SqlBinary objectSid, byte objectSidWhereDefined, byte authorizationType, DateTime validFrom, DateTime validTo, int applicationId)
+        public int AuthorizationInsert(int itemId, byte[] ownerId, byte ownerSidWhereDefined, byte[] objectSid, byte objectSidWhereDefined, byte authorizationType, DateTime validFrom, DateTime validTo, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_AuthorizationInsert {itemId}, {ownerId}, {ownerSidWhereDefined}, {objectSid}, {objectSidWhereDefined}, {authorizationType}, {validFrom}, {validTo}, {applicationId}"
@@ -484,7 +492,7 @@ namespace NetSqlAzMan.Database
         //    return this.CreateMethodCallQuery<AuthorizationsResult>(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())));
         //}
 
-        public int AuthorizationUpdate(int itemId, SqlBinary ownerId, byte ownerSidWhereDefined, SqlBinary objectSid, byte objectSidWhereDefined, byte authorizationType, DateTime validFrom, DateTime validTo, int original_AuthorizationId, int applicationId)
+        public int AuthorizationUpdate(int itemId, byte[] ownerId, byte ownerSidWhereDefined, byte[] objectSid, byte objectSidWhereDefined, byte authorizationType, DateTime validFrom, DateTime validTo, int original_AuthorizationId, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_AuthorizationUpdate {itemId}, {ownerId}, {ownerSidWhereDefined}, {objectSid}, {objectSidWhereDefined}, {authorizationType}, {validFrom}, {validTo}, {original_AuthorizationId}, {applicationId}"
@@ -530,7 +538,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int BizRuleInsert(string bizRuleSource, byte bizRuleLanguage, SqlBinary compiledAssembly)
+        public int BizRuleInsert(string bizRuleSource, byte bizRuleLanguage, byte[] compiledAssembly)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_BizRuleInsert {bizRuleSource}, {bizRuleLanguage}, {compiledAssembly}"
@@ -556,7 +564,7 @@ namespace NetSqlAzMan.Database
         //    return this.CreateMethodCallQuery<BizRulesResult>(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())));
         //}
 
-        public int BizRuleUpdate(string bizRuleSource, byte bizRuleLanguage, SqlBinary compiledAssembly, int original_BizRuleId, int applicationId)
+        public int BizRuleUpdate(string bizRuleSource, byte bizRuleLanguage, byte[] compiledAssembly, int original_BizRuleId, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_BizRuleUpdate {bizRuleSource}, {bizRuleLanguage}, {compiledAssembly}, {original_BizRuleId}, {applicationId}"
@@ -701,7 +709,7 @@ namespace NetSqlAzMan.Database
         }
         */
 
-        public int CreateDelegate(int iTEMID, SqlBinary oWNERSID, byte oWNERSIDWHEREDEFINED, SqlBinary dELEGATEDUSERSID, byte sIDWHEREDEFINED, byte aUTHORIZATIONTYPE, DateTime vALIDFROM, DateTime vALIDTO, out int aUTHORIZATIONID)
+        public int CreateDelegate(int iTEMID, byte[] oWNERSID, byte oWNERSIDWHEREDEFINED, byte[] dELEGATEDUSERSID, byte sIDWHEREDEFINED, byte aUTHORIZATIONTYPE, DateTime vALIDFROM, DateTime vALIDTO, out int aUTHORIZATIONID)
         {
             var authId = new SqlParameter("@AUTHORIZATIONID", SqlDbType.Int);
             var result = this.Database.ExecuteSqlInterpolated(
@@ -730,7 +738,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int DeleteDelegate(int aUTHORIZATIONID, SqlBinary oWNERSID)
+        public int DeleteDelegate(int aUTHORIZATIONID, byte[] oWNERSID)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_DeleteDelegate {aUTHORIZATIONID}, {oWNERSID}"
@@ -749,7 +757,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int DirectCheckAccess(string sTORENAME, string aPPLICATIONNAME, string iTEMNAME, bool oPERATIONSONLY, SqlBinary tOKEN, int uSERGROUPSCOUNT, DateTime vALIDFOR, string lDAPPATH, byte aUTHORIZATION_TYPE, bool rETRIEVEATTRIBUTES)
+        public int DirectCheckAccess(string sTORENAME, string aPPLICATIONNAME, string iTEMNAME, bool oPERATIONSONLY, byte[] tOKEN, int uSERGROUPSCOUNT, DateTime vALIDFOR, string lDAPPATH, byte aUTHORIZATION_TYPE, bool rETRIEVEATTRIBUTES)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_DirectCheckAccess {sTORENAME}, {aPPLICATIONNAME}, {iTEMNAME}, {oPERATIONSONLY}, {tOKEN}, {uSERGROUPSCOUNT}, {vALIDFOR}, {lDAPPATH}, {aUTHORIZATION_TYPE}, {rETRIEVEATTRIBUTES}"
@@ -779,7 +787,7 @@ namespace NetSqlAzMan.Database
 
         public DbSet<GetDBUsersResult> GetDBUsersResult { get; set; }
 
-        public IQueryable<GetDBUsersResult> GetDBUsers(string storeName, string applicationName, SqlBinary dBUserSid, string dBUserName)
+        public IQueryable<GetDBUsersResult> GetDBUsers(string storeName, string applicationName, byte[] dBUserSid, string dBUserName)
         {
             var result = this.GetDBUsersResult.FromSqlInterpolated(
                 $"EXEC dbo.netsqlazman_GetDBUsers {storeName}, {applicationName}, {dBUserSid}, {dBUserName}"
@@ -799,11 +807,11 @@ namespace NetSqlAzMan.Database
         }
         */
 
-        public bool GetNameFromSid(string storeName, string applicationName, SqlBinary sid, byte sidWhereDefined)
+        public bool GetNameFromSid(string storeName, string applicationName, byte[] sid, byte sidWhereDefined)
         {
             return netsqlazman_GetNameFromSid(storeName, applicationName, sid, sidWhereDefined);
         }
-        public bool netsqlazman_GetNameFromSid(string storeName, string applicationName, SqlBinary sid, byte sidWhereDefined) => throw new NotSupportedException();
+        public bool netsqlazman_GetNameFromSid(string storeName, string applicationName, byte[] sid, byte sidWhereDefined) => throw new NotSupportedException();
 
         /**
         [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_GetNameFromSid", IsComposable = true)]
@@ -1249,7 +1257,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int StoreGroupInsert(int storeId, SqlBinary objectSid, string name, string description, string lDapQuery, byte groupType)
+        public int StoreGroupInsert(int storeId, byte[] objectSid, string name, string description, string lDapQuery, byte groupType)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_StoreGroupInsert {storeId}, {objectSid}, {name}, {description}, {lDapQuery}, {groupType}"
@@ -1291,7 +1299,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int StoreGroupMemberInsert(int storeId, int storeGroupId, SqlBinary objectSid, byte whereDefined, bool isMember)
+        public int StoreGroupMemberInsert(int storeId, int storeGroupId, byte[] objectSid, byte whereDefined, bool isMember)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_StoreGroupMemberInsert {storeId}, {storeGroupId}, {objectSid}, {whereDefined}, {isMember}"
@@ -1319,7 +1327,7 @@ namespace NetSqlAzMan.Database
         //    return this.CreateMethodCallQuery<StoreGroupMembersResult>(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())));
         //}
 
-        public int StoreGroupMemberUpdate(int storeId, int storeGroupId, SqlBinary objectSid, byte whereDefined, bool isMember, int original_StoreGroupMemberId)
+        public int StoreGroupMemberUpdate(int storeId, int storeGroupId, byte[] objectSid, byte whereDefined, bool isMember, int original_StoreGroupMemberId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_StoreGroupMemberUpdate {storeId}, {storeGroupId}, {objectSid}, {whereDefined}, {isMember}, {original_StoreGroupMemberId}"
@@ -1348,7 +1356,7 @@ namespace NetSqlAzMan.Database
         //    return this.CreateMethodCallQuery<StoreGroupsResult>(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())));
         //}
 
-        public int StoreGroupUpdate(int storeId, SqlBinary objectSid, string name, string description, string lDapQuery, byte groupType, int original_StoreGroupId)
+        public int StoreGroupUpdate(int storeId, byte[] objectSid, string name, string description, string lDapQuery, byte groupType, int original_StoreGroupId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_StoreGroupUpdate {storeId}, {objectSid}, {name}, {description}, {lDapQuery}, {groupType}, {original_StoreGroupId}"
@@ -1463,7 +1471,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int CheckAccess(int iTEMID, SqlBinary uSERSID, DateTime vALIDFOR, string lDAPPATH, byte aUTHORIZATION_TYPE, bool nETSQLAZMANMODE, bool rETRIEVEATTRIBUTES)
+        public int CheckAccess(int iTEMID, byte[] uSERSID, DateTime vALIDFOR, string lDAPPATH, byte aUTHORIZATION_TYPE, bool nETSQLAZMANMODE, bool rETRIEVEATTRIBUTES)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_CheckAccess {iTEMID}, {uSERSID}, {vALIDFOR}, {lDAPPATH}, {aUTHORIZATION_TYPE}, {nETSQLAZMANMODE}, {rETRIEVEATTRIBUTES}"
@@ -1536,7 +1544,7 @@ namespace NetSqlAzMan.Database
                 .GetMethod(nameof(netsqlazman_DBVersion), new Type[] { }))
                 .HasName("netsqlazman_DBVersion");
             modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
-                .GetMethod(nameof(netsqlazman_GetNameFromSid), new Type[] { typeof(string), typeof(string), typeof(SqlBinary), typeof(byte) }))
+                .GetMethod(nameof(netsqlazman_GetNameFromSid), new Type[] { typeof(string), typeof(string), typeof(byte[]), typeof(byte) }))
                 .HasName("netsqlazman_GetNameFromSid");
             modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
                 .GetMethod(nameof(netsqlazman_IAmAdmin), new Type[] { }))
@@ -1553,6 +1561,9 @@ namespace NetSqlAzMan.Database
             modelBuilder.Entity<BuildUserPermissionCacheResult2>()
                 .HasNoKey()
                 .ToTable("netsqlazman_BuildUserPermissionCache", t => t.ExcludeFromMigrations());
+            modelBuilder.Entity<GetDBUsersResult>()
+                .HasNoKey()
+                .ToTable("netsqlazman_GetDBUsers", t => t.ExcludeFromMigrations());
         }
     }
 }
