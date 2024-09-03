@@ -19,7 +19,8 @@ using NetSqlAzMan.Database;
 using NetSqlAzMan.Logging;
 using NetSqlAzMan.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore.Storage;
+//using Microsoft.Data.SqlClient;
 
 namespace NetSqlAzMan
 {
@@ -119,11 +120,11 @@ namespace NetSqlAzMan
         {
             get
             {
-                return this.db.Log;
+                return null;// this.db.Log;
             }
             set
             {
-                this.db.Log = value;
+                //this.db.Log = value;
             }
         }
         /// <summary>
@@ -197,7 +198,7 @@ namespace NetSqlAzMan
         [System.Runtime.Serialization.OnDeserialized()]
         private void OnDeserialized(StreamingContext context)
         {
-            this.db = new NetSqlAzManStorageContext(this.ConnectionString);
+            this.db = new NetSqlAzManStorageContext();
             this.logging = new LoggingUtility();
         }
         [System.Runtime.Serialization.OnSerializing()]
@@ -230,13 +231,13 @@ namespace NetSqlAzMan
         {
             if (!this.userTransaction)
             {
-                if (this.db.Transaction == null)
+                if (this.db.Database.CurrentTransaction == null)
                 {
-                    if (this.db.Connection.State == ConnectionState.Closed)
+                    if (this.db.Database.GetDbConnection().State == ConnectionState.Closed)
                     {
-                        this.db.Connection.Open();
+                        this.db.Database.GetDbConnection().Open();
                     }
-                    this.db.Transaction = this.db.Connection.BeginTransaction(isolationLevel);
+                    this.db.Database.BeginTransaction(isolationLevel);
                     this.raiseTransactionBeginned();
                     return true;
                 }
@@ -247,11 +248,11 @@ namespace NetSqlAzMan
         {
             if (!this.userTransaction)
             {
-                if (this.db.Transaction != null)
+                if (this.db.Database.CurrentTransaction != null)
                 {
-                    this.db.Transaction.Commit();
+                    this.db.Database.CurrentTransaction.Commit();
                     this.raiseTransactionTerminated(true);
-                    this.db.Connection.Close();
+                    this.db.Database.GetDbConnection().Close();
                 }
             }
         }
@@ -259,11 +260,11 @@ namespace NetSqlAzMan
         {
             if (!this.userTransaction)
             {
-                if (this.db.Transaction != null)
+                if (this.db.Database.CurrentTransaction != null)
                 {
                     this.raiseTransactionTerminated(false);
-                    this.db.Transaction.Rollback();
-                    this.db.Connection.Close();
+                    this.db.Database.CurrentTransaction.Rollback();
+                    this.db.Database.GetDbConnection().Close();
                 }
             }
         }
@@ -288,13 +289,13 @@ namespace NetSqlAzMan
         /// Gets the database vesion.
         /// </summary>
         /// <value>The database vesion.</value>
-        //public string DatabaseVesion
-        //{
-        //    get
-        //    {
-        //        return this.db.NetSqlAzMan_DBVersion();
-        //    }
-        //}
+        public string DatabaseVesion
+        {
+            get
+            {
+                return this.db.NetSqlAzMan_DBVersion();
+            }
+        }
         /// <summary>
         /// Gets the DB users.
         /// </summary>
@@ -381,7 +382,7 @@ namespace NetSqlAzMan
                 if (!scsb.IntegratedSecurity)
                     scsb.PersistSecurityInfo = true;
                 this.connectionString = scsb.ToString();
-                this.db = new NetSqlAzManStorageContext(this.connectionString);
+                this.db = new NetSqlAzManStorageContext();
                 this.db.Database.SetCommandTimeout(this.StorageTimeOut);
             }
         }
@@ -452,7 +453,7 @@ namespace NetSqlAzMan
         /// </returns>
         public bool HasStores()
         {
-            return this.db.Stores().Any();
+            return this.db.NetsqlazmanStoresTables.Any();
         }
 
         /// <summary>
@@ -462,7 +463,7 @@ namespace NetSqlAzMan
         public IAzManStore[] GetStores()
         {
             IAzManStore[] stores;
-            var s = (from tf in this.db.Stores()
+            var s = (from tf in this.db.NetsqlazmanStoresTables
                      orderby tf.Name
                      select tf).ToList();
             stores = new SqlAzManStore[s.Count];
@@ -483,7 +484,7 @@ namespace NetSqlAzMan
                     else if (res2.HasValue && res2.Value)
                         netsqlazmanFixedServerRole = 1;
                 }
-                stores[index] = new SqlAzManStore(this.db, this, row.StoreId.Value, row.Name, row.Description, netsqlazmanFixedServerRole, this.ens);
+                stores[index] = new SqlAzManStore(this.db, this, row.StoreId, row.Name, row.Description, netsqlazmanFixedServerRole, this.ens);
                 this.raiseStoreOpened(stores[index]);
                 if (this.ens != null)
                     this.ens.AddPublisher(stores[index]);
@@ -567,7 +568,7 @@ namespace NetSqlAzMan
                 windowsIdentity.User.GetBinaryForm(bSid, 0);
                 token.AddRange(bSid);
             }
-            SqlConnection conn = new SqlConnection(this.db.Connection.ConnectionString);
+            SqlConnection conn = new SqlConnection(this.db.Database.GetDbConnection().ConnectionString);
             conn.Open();
             DataSet checkAccessResults = new DataSet();
             System.Data.SqlClient.SqlCommand cmd = new SqlCommand("dbo.netsqlazman_DirectCheckAccess", conn);
@@ -767,7 +768,7 @@ namespace NetSqlAzMan
         private AuthorizationType internalCheckAccess(string StoreName, string ApplicationName, string ItemName, IAzManDBUser dbUser, DateTime ValidFor, bool OperationsOnly, bool retrieveAttributes, out List<KeyValuePair<string, string>> attributes, params KeyValuePair<string, object>[] contextParameters)
         {
             int userGroupsCount = 0;
-            SqlConnection conn = new SqlConnection(this.db.Connection.ConnectionString);
+            SqlConnection conn = new SqlConnection(this.db.Database.GetDbConnection().ConnectionString);
             conn.Open();
             System.Data.SqlClient.SqlCommand cmd = conn.CreateCommand();
             cmd.CommandText = "dbo.netsqlazman_DirectCheckAccess";
@@ -1140,7 +1141,7 @@ namespace NetSqlAzMan
             {
                 if (!this.iamadmin.HasValue)
                 {
-                    this.iamadmin = this.db.IAmAdmin().Value;
+                    this.iamadmin = this.db.IAmAdmin();
                 }
                 return this.iamadmin.Value;
             }
@@ -1182,7 +1183,7 @@ namespace NetSqlAzMan
                     break;
             }
             this.OpenConnection();
-            this.db.Transaction = this.db.Connection.BeginTransaction(isoLevel);
+            this.db.Database.BeginTransaction(isoLevel);
             this.transactionGuid = Guid.NewGuid();
             this.raiseTransactionBeginned();
             this.userTransaction = true;
@@ -1193,7 +1194,7 @@ namespace NetSqlAzMan
         /// </summary>
         public void CommitTransaction()
         {
-            this.db.Transaction.Commit();
+            this.db.Database.CurrentTransaction.Commit();
             this.raiseTransactionTerminated(true);
             this.transactionGuid = Guid.Empty;
             this.CloseConnection();
@@ -1207,7 +1208,7 @@ namespace NetSqlAzMan
         {
             if (this.TransactionInProgress)
             {
-                this.db.Transaction.Rollback();
+                this.db.Database.CurrentTransaction.Rollback();
             }
             this.raiseTransactionTerminated(false);
             this.transactionGuid = Guid.Empty;
@@ -1225,7 +1226,7 @@ namespace NetSqlAzMan
         {
             get
             {
-                if (this.db != null && this.db.Transaction != null && this.db.Transaction.Connection != null)
+                if (this.db != null && this.db.Database.CurrentTransaction != null && this.db.Database.CurrentTransaction.GetDbTransaction().Connection != null)
                     return true;
                 else
                     return false;
@@ -1253,8 +1254,8 @@ namespace NetSqlAzMan
                 if (!this.mode.HasValue)
                 {
                     //Mode
-                    Settings s;
-                    if ((s = (from t in this.db.Settings where t.SettingName == "Mode" select t).FirstOrDefault()) != null)
+                    NetsqlazmanSetting s;
+                    if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "Mode" select t).FirstOrDefault()) != null)
                     {
                         this.mode = (s.SettingValue == "Developer" ? NetSqlAzManMode.Developer : NetSqlAzManMode.Administrator);
                     }
@@ -1269,17 +1270,17 @@ namespace NetSqlAzMan
             }
             set
             {
-                Settings s = null;
-                if ((s = (from t in this.db.Settings where t.SettingName == "Mode" select t).FirstOrDefault()) != null)
+                NetsqlazmanSetting s = null;
+                if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "Mode" select t).FirstOrDefault()) != null)
                 {
                     s.SettingValue = value.ToString();
-                    this.db.SubmitChanges();
+                    this.db.SaveChanges();
                     this.raiseNetSqlAzManModeChanged(this.mode.Value, value);
                 }
                 else
                 {
-                    this.db.Settings.InsertOnSubmit(new Settings { SettingName = "Mode", SettingValue = value.ToString() });
-                    this.db.SubmitChanges();
+                    this.db.NetsqlazmanSettings.Add(new NetsqlazmanSetting { SettingName = "Mode", SettingValue = value.ToString() });
+                    this.db.SaveChanges();
                 }
                 this.mode = value;
             }
@@ -1297,8 +1298,8 @@ namespace NetSqlAzMan
                 if (!this.logErrors.HasValue)
                 {
                     //Log Errors
-                    Settings s;
-                    if ((s = (from t in this.db.Settings where t.SettingName == "LogErrors" select t).FirstOrDefault()) != null)
+                    NetsqlazmanSetting s;
+                    if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogErrors" select t).FirstOrDefault()) != null)
                     {
                         this.logErrors = (s.SettingValue == "True");
                     }
@@ -1314,16 +1315,16 @@ namespace NetSqlAzMan
             }
             set
             {
-                Settings s;
-                if ((s = (from t in this.db.Settings where t.SettingName == "LogErrors" select t).FirstOrDefault()) != null)
+                NetsqlazmanSetting s;
+                if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogErrors" select t).FirstOrDefault()) != null)
                 {
                     s.SettingValue = value ? "True" : "False";
-                    this.db.SubmitChanges();
+                    this.db.SaveChanges();
                 }
                 else
                 {
-                    this.db.Settings.InsertOnSubmit(new Settings() { SettingName = "LogErrors", SettingValue = value ? "True" : "False" });
-                    this.db.SubmitChanges();
+                    this.db.NetsqlazmanSettings.Add(new NetsqlazmanSetting() { SettingName = "LogErrors", SettingValue = value ? "True" : "False" });
+                    this.db.SaveChanges();
                 }
                 this.logErrors = value;
             }
@@ -1340,8 +1341,8 @@ namespace NetSqlAzMan
                 if (!this.logWarnings.HasValue)
                 {
                     //Log Warnings
-                    Settings s;
-                    if ((s = (from t in this.db.Settings where t.SettingName == "LogWarnings" select t).FirstOrDefault()) != null)
+                    NetsqlazmanSetting s;
+                    if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogWarnings" select t).FirstOrDefault()) != null)
                     {
                         this.logWarnings = (s.SettingValue == "True");
                     }
@@ -1356,16 +1357,16 @@ namespace NetSqlAzMan
             }
             set
             {
-                Settings s;
-                if ((s = (from t in this.db.Settings where t.SettingName == "LogWarnings" select t).FirstOrDefault()) != null)
+                NetsqlazmanSetting s;
+                if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogWarnings" select t).FirstOrDefault()) != null)
                 {
                     s.SettingValue = value ? "True" : "False";
-                    this.db.SubmitChanges();
+                    this.db.SaveChanges();
                 }
                 else
                 {
-                    this.db.Settings.InsertOnSubmit(new Settings() { SettingName = "LogWarnings", SettingValue = value ? "True" : "False" });
-                    this.db.SubmitChanges();
+                    this.db.NetsqlazmanSettings.Add(new NetsqlazmanSetting() { SettingName = "LogWarnings", SettingValue = value ? "True" : "False" });
+                    this.db.SaveChanges();
                 }
                 this.logWarnings = value;
             }
@@ -1382,8 +1383,8 @@ namespace NetSqlAzMan
                 if (!this.logInformations.HasValue)
                 {
                     //Log Informations
-                    Settings s;
-                    if ((s = (from t in this.db.Settings where t.SettingName == "LogInformations" select t).FirstOrDefault()) != null)
+                    NetsqlazmanSetting s;
+                    if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogInformations" select t).FirstOrDefault()) != null)
                     {
                         this.logInformations = (s.SettingValue == "True");
                     }
@@ -1398,16 +1399,16 @@ namespace NetSqlAzMan
             }
             set
             {
-                Settings s;
-                if ((s = (from t in this.db.Settings where t.SettingName == "LogInformations" select t).FirstOrDefault()) != null)
+                NetsqlazmanSetting s;
+                if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogInformations" select t).FirstOrDefault()) != null)
                 {
                     s.SettingValue = value ? "True" : "False";
-                    this.db.SubmitChanges();
+                    this.db.SaveChanges();
                 }
                 else
                 {
-                    this.db.Settings.InsertOnSubmit(new Settings() { SettingName = "LogInformations", SettingValue = value ? "True" : "False" });
-                    this.db.SubmitChanges();
+                    this.db.NetsqlazmanSettings.Add(new NetsqlazmanSetting() { SettingName = "LogInformations", SettingValue = value ? "True" : "False" });
+                    this.db.SaveChanges();
                 }
                 this.logInformations = value;
             }
@@ -1424,8 +1425,8 @@ namespace NetSqlAzMan
                 if (!this.logOnEventLog.HasValue)
                 {
                     //Log On Event Log
-                    Settings s;
-                    if ((s = (from t in this.db.Settings where t.SettingName == "LogOnEventLog" select t).FirstOrDefault()) != null)
+                    NetsqlazmanSetting s;
+                    if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogOnEventLog" select t).FirstOrDefault()) != null)
                     {
                         this.logOnEventLog = (s.SettingValue == "True");
                     }
@@ -1440,16 +1441,16 @@ namespace NetSqlAzMan
             }
             set
             {
-                Settings s;
-                if ((s = (from t in this.db.Settings where t.SettingName == "LogOnEventLog" select t).FirstOrDefault()) != null)
+                NetsqlazmanSetting s;
+                if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogOnEventLog" select t).FirstOrDefault()) != null)
                 {
                     s.SettingValue = value ? "True" : "False";
-                    this.db.SubmitChanges();
+                    this.db.SaveChanges();
                 }
                 else
                 {
-                    this.db.Settings.InsertOnSubmit(new Settings() { SettingName = "LogOnEventLog", SettingValue = value ? "True" : "False" });
-                    this.db.SubmitChanges();
+                    this.db.NetsqlazmanSettings.Add(new NetsqlazmanSetting() { SettingName = "LogOnEventLog", SettingValue = value ? "True" : "False" });
+                    this.db.SaveChanges();
                 }
                 this.logOnEventLog = value;
             }
@@ -1465,8 +1466,8 @@ namespace NetSqlAzMan
                 if (!this.logOnDb.HasValue)
                 {
                     //Log On Event Log
-                    Settings s;
-                    if ((s = (from t in this.db.Settings where t.SettingName == "LogOnDb" select t).FirstOrDefault()) != null)
+                    NetsqlazmanSetting s;
+                    if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogOnDb" select t).FirstOrDefault()) != null)
                     {
                         this.logOnDb = (s.SettingValue == "True");
                     }
@@ -1481,16 +1482,16 @@ namespace NetSqlAzMan
             }
             set
             {
-                Settings s;
-                if ((s = (from t in this.db.Settings where t.SettingName == "LogOnDb" select t).FirstOrDefault()) != null)
+                NetsqlazmanSetting s;
+                if ((s = (from t in this.db.NetsqlazmanSettings where t.SettingName == "LogOnDb" select t).FirstOrDefault()) != null)
                 {
                     s.SettingValue = value ? "True" : "False";
-                    this.db.SubmitChanges();
+                    this.db.SaveChanges();
                 }
                 else
                 {
-                    this.db.Settings.InsertOnSubmit(new Settings() { SettingName = "LogOnDb", SettingValue = value ? "True" : "False" });
-                    this.db.SubmitChanges();
+                    this.db.NetsqlazmanSettings.Add(new NetsqlazmanSetting() { SettingName = "LogOnDb", SettingValue = value ? "True" : "False" });
+                    this.db.SaveChanges();
                 }
                 this.logOnDb = value;
             }
@@ -1563,7 +1564,7 @@ namespace NetSqlAzMan
             }
             else
             {
-                result = new SqlAzManDBUser(new SqlAzManSID(dtDBUsers.First().DBUserSid.ToArray(), true), dtDBUsers.First().DBUserName);
+                result = new SqlAzManDBUser(new SqlAzManSID(dtDBUsers.First().DBUserSid.ToString(), true), dtDBUsers.First().DBUserName);
             }
             return result;
         }

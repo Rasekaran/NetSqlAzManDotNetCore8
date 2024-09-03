@@ -8,6 +8,7 @@ using System.Security.Principal;
 using System.Threading;
 using NetSqlAzMan.Interfaces;
 using NetSqlAzMan.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace NetSqlAzMan.Cache
 {
@@ -171,7 +172,7 @@ namespace NetSqlAzMan.Cache
                     ThreadPool.QueueUserWorkItem(new WaitCallback(
                         delegate(object o)
                         {
-                            IAzManStorage clonedStorage = new SqlAzManStorage(((SqlAzManStorage)this.storage).db.Connection.ConnectionString);
+                            IAzManStorage clonedStorage = new SqlAzManStorage(((SqlAzManStorage)this.storage).db.Database.GetDbConnection().ConnectionString);
                             int localIndex = (int)((object[])o)[0];
                             ManualResetEvent localWaitHandle = (ManualResetEvent)((object[])o)[1];
                             BuildUserPermissionCacheResult2 localAuth = (BuildUserPermissionCacheResult2)((object[])o)[2];

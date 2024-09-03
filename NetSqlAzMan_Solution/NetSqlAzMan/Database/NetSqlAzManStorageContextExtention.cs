@@ -1,11 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using NetSqlAzMan.Database;
+using NetSqlAzMan.DbExt;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -26,30 +29,30 @@ namespace NetSqlAzMan.Database
         /// <param name="dBUserSid">The d B user sid.</param>
         /// <param name="dBUserName">Name of the d B user.</param>
         /// <returns></returns>
-        //public DataTable GetDBUsersEx(string storeName, string applicationName, byte[] dBUserSid, string dBUserName)
-        //{
-        //    DataTable result = new DataTable("DBUsers");
-        //    using (var da = new SqlDataAdapter("select * from dbo.netsqlazman_GetDBUsers(@StoreName, @ApplicationName, @DBUserSID, @DBUserName)", (SqlConnection)this.Connection))
-        //    {
-        //        SqlParameter pStoreName = new SqlParameter("@StoreName", SqlDbType.NVarChar, 255);
-        //        SqlParameter pApplicationName = new SqlParameter("@ApplicationName", SqlDbType.NVarChar, 255);
-        //        SqlParameter pDBUserSID = new SqlParameter("@DBUserSID", SqlDbType.VarBinary, 85);
-        //        SqlParameter pDBUserName = new SqlParameter("@DBUserName", SqlDbType.NVarChar, 255);
-        //        pStoreName.Value = !String.IsNullOrEmpty(storeName) ? (object)storeName : DBNull.Value;
-        //        pApplicationName.Value = !String.IsNullOrEmpty(applicationName)
-        //                                     ? (object)applicationName
-        //                                     : DBNull.Value;
-        //        pDBUserSID.Value = dBUserSid != null ? (object)dBUserSid : DBNull.Value;
-        //        pDBUserName.Value = !String.IsNullOrEmpty(dBUserName) ? (object)dBUserName : DBNull.Value;
-        //        da.SelectCommand.Parameters.Add(pStoreName);
-        //        da.SelectCommand.Parameters.Add(pApplicationName);
-        //        da.SelectCommand.Parameters.Add(pDBUserSID);
-        //        da.SelectCommand.Parameters.Add(pDBUserName);
-        //        da.SelectCommand.Transaction = this.Transaction as SqlTransaction;
-        //        da.Fill(result);
-        //    }
-        //    return result;
-        //}
+        public DataTable GetDBUsersEx(string storeName, string applicationName, byte[] dBUserSid, string dBUserName)
+        {
+            DataTable result = new DataTable("DBUsers");
+            using (var da = new SqlDataAdapter("select * from dbo.netsqlazman_GetDBUsers(@StoreName, @ApplicationName, @DBUserSID, @DBUserName)", (SqlConnection)this.Database.GetDbConnection()))
+            {
+                SqlParameter pStoreName = new SqlParameter("@StoreName", SqlDbType.NVarChar, 255);
+                SqlParameter pApplicationName = new SqlParameter("@ApplicationName", SqlDbType.NVarChar, 255);
+                SqlParameter pDBUserSID = new SqlParameter("@DBUserSID", SqlDbType.VarBinary, 85);
+                SqlParameter pDBUserName = new SqlParameter("@DBUserName", SqlDbType.NVarChar, 255);
+                pStoreName.Value = !String.IsNullOrEmpty(storeName) ? (object)storeName : DBNull.Value;
+                pApplicationName.Value = !String.IsNullOrEmpty(applicationName)
+                                             ? (object)applicationName
+                                             : DBNull.Value;
+                pDBUserSID.Value = dBUserSid != null ? (object)dBUserSid : DBNull.Value;
+                pDBUserName.Value = !String.IsNullOrEmpty(dBUserName) ? (object)dBUserName : DBNull.Value;
+                da.SelectCommand.Parameters.Add(pStoreName);
+                da.SelectCommand.Parameters.Add(pApplicationName);
+                da.SelectCommand.Parameters.Add(pDBUserSID);
+                da.SelectCommand.Parameters.Add(pDBUserName);
+                da.SelectCommand.Transaction = this.Database.CurrentTransaction.GetDbTransaction() as SqlTransaction;
+                da.Fill(result);
+            }
+            return result;
+        }
 
         //partial void OnCreated()
         //{
@@ -430,7 +433,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int AuthorizationAttributeUpdate(int authorizationId, int applicationId)
+        public int AuthorizationDelete(int authorizationId, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_AuthorizationDelete {authorizationId}, {applicationId}"
@@ -575,13 +578,56 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int BuildUserPermissionCache(string sTORENAME, string aPPLICATIONNAME)
-        {
-            var result = this.Database.ExecuteSqlInterpolated(
-                $"EXEC dbo.netsqlazman_BuildUserPermissionCache {sTORENAME}, {aPPLICATIONNAME}"
-            );
+        //public int BuildUserPermissionCache(string sTORENAME, string aPPLICATIONNAME)
+        //{
+        //    var result = this.Database.ExecuteSqlInterpolated(
+        //        $"EXEC dbo.netsqlazman_BuildUserPermissionCache {sTORENAME}, {aPPLICATIONNAME}"
+        //    );
 
-            return result;
+        //    return result;
+        //}
+
+
+        public class BuildUserPermissionCacheResults
+        {
+            List<BuildUserPermissionCacheResult1> _Result1;
+            List<BuildUserPermissionCacheResult2> _Result2;
+            public BuildUserPermissionCacheResults(
+                List<BuildUserPermissionCacheResult1> Result1,
+                List<BuildUserPermissionCacheResult2> Result2
+            )
+            {
+                _Result1 = Result1;
+                _Result2 = Result2;
+            }
+
+            public List<T> GetResult<T>()
+            {
+                if(typeof(T) == typeof(BuildUserPermissionCacheResult1))
+                {
+                    return _Result1 as List<T>;
+                }
+                if (typeof(T) == typeof(BuildUserPermissionCacheResult2))
+                {
+                    return _Result2 as List<T>;
+                }
+                return null;
+            }
+        }
+
+        //public DbSet<BuildUserPermissionCacheResult2> BuildUserPermissionCacheResult2 { get; set; }
+
+        public BuildUserPermissionCacheResults BuildUserPermissionCache(string sTORENAME, string aPPLICATIONNAME) {
+            DataSet result = this.DataSet($"EXEC dbo.netsqlazman_BuildUserPermissionCache @storeName @applicationName",
+                        new SqlParameter("storeName", sTORENAME), 
+                        new SqlParameter("applicationName", aPPLICATIONNAME));
+            List<BuildUserPermissionCacheResult1> cacheResult1 = result.Tables[0].ToList<BuildUserPermissionCacheResult1>();
+            List<BuildUserPermissionCacheResult2> cacheResult2 = result.Tables[1].ToList<BuildUserPermissionCacheResult2>();
+            return new BuildUserPermissionCacheResults(cacheResult1, cacheResult2);
+            //var result = this.BuildUserPermissionCacheResult2.FromSqlInterpolated (
+            //    $"EXEC dbo.netsqlazman_BuildUserPermissionCache {sTORENAME}, {aPPLICATIONNAME}"
+            //);
+            //return result;
         }
 
         //[global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_BuildUserPermissionCache")]
@@ -595,14 +641,11 @@ namespace NetSqlAzMan.Database
         //    return ((IMultipleResults)(result.ReturnValue));
         //}
 
-        public int CheckApplicationPermissions(int aPPLICATIONID, byte rOLEID)
+        public Nullable<bool> CheckApplicationPermissions(int aPPLICATIONID, byte rOLEID)
         {
-            var result = this.Database.ExecuteSqlInterpolated(
-                $"EXEC dbo.netsqlazman_CheckApplicationPermissions {aPPLICATIONID}, {rOLEID}"
-            );
-
-            return result;
+            return netsqlazman_CheckApplicationPermissions(aPPLICATIONID, rOLEID);
         }
+        public bool netsqlazman_CheckApplicationPermissions(int aPPLICATIONID, byte rOLEID) => throw new NotSupportedException();
 
         //[global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_CheckApplicationPermissions", IsComposable = true)]
         //[return: global::System.Data.Linq.Mapping.ParameterAttribute(DbType = "Bit")]
@@ -613,14 +656,20 @@ namespace NetSqlAzMan.Database
         //    return ((System.Nullable<bool>)(this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), aPPLICATIONID, rOLEID).ReturnValue));
         //}
 
-        public int CheckStorePermissions(int sTOREID, byte rOLEID)
-        {
-            var result = this.Database.ExecuteSqlInterpolated(
-                $"EXEC dbo.netsqlazman_CheckStorePermissions {sTOREID}, {rOLEID}"
-            );
+        //public int CheckStorePermissions(int sTOREID, byte rOLEID)
+        //{
+        //    var result = this.Database.ExecuteSqlInterpolated(
+        //        $"EXEC dbo.netsqlazman_CheckStorePermissions {sTOREID}, {rOLEID}"
+        //    );
 
-            return result;
+        //    return result;
+        //}
+
+        public System.Nullable<bool> CheckStorePermissions(int aPPLICATIONID, byte rOLEID)
+        {
+            return netsqlazman_CheckStorePermissions(aPPLICATIONID, rOLEID);
         }
+        public System.Nullable<bool> netsqlazman_CheckStorePermissions(int aPPLICATIONID, byte rOLEID) => throw new NotSupportedException();
 
         //[global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_CheckStorePermissions", IsComposable = true)]
         //[return: global::System.Data.Linq.Mapping.ParameterAttribute(DbType = "Bit")]
@@ -631,21 +680,34 @@ namespace NetSqlAzMan.Database
         //    return ((System.Nullable<bool>)(this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), sTOREID, rOLEID).ReturnValue));
         //}
 
+        public int ClearBizRule(int itemId, int applicationId)
+        {
+            var result = this.Database.ExecuteSqlInterpolated(
+                $"EXEC dbo.netsqlazman_ClearBizRule {itemId}, {applicationId}"
+            );
+
+            return result;
+        }
+
         /**
         [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_ClearBizRule")]
         [return: global::System.Data.Linq.Mapping.ParameterAttribute(DbType = "Int")]
-        public int ClearBizRule([global::System.Data.Linq.Mapping.ParameterAttribute(Name = "ItemId", DbType = "Int")] System.Nullable<int> itemId, [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "ApplicationId", DbType = "Int")] System.Nullable<int> applicationId)
+        public int ClearBizRule(
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "ItemId", DbType = "Int")] System.Nullable<int> itemId, 
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "ApplicationId", DbType = "Int")] System.Nullable<int> applicationId)
         {
             IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), itemId, applicationId);
             return ((int)(result.ReturnValue));
         }
         */
 
-        public int CreateDelegate(int iTEMID, SqlBinary oWNERSID, byte oWNERSIDWHEREDEFINED, SqlBinary dELEGATEDUSERSID, byte sIDWHEREDEFINED, byte aUTHORIZATIONTYPE, DateTime vALIDFROM, DateTime vALIDTO, int aUTHORIZATIONID)
+        public int CreateDelegate(int iTEMID, SqlBinary oWNERSID, byte oWNERSIDWHEREDEFINED, SqlBinary dELEGATEDUSERSID, byte sIDWHEREDEFINED, byte aUTHORIZATIONTYPE, DateTime vALIDFROM, DateTime vALIDTO, out int aUTHORIZATIONID)
         {
+            var authId = new SqlParameter("@AUTHORIZATIONID", SqlDbType.Int);
             var result = this.Database.ExecuteSqlInterpolated(
-                $"EXEC dbo.netsqlazman_CreateDelegate {iTEMID}, {oWNERSID}, {oWNERSIDWHEREDEFINED}, {dELEGATEDUSERSID}, {sIDWHEREDEFINED}, {aUTHORIZATIONTYPE}, {vALIDFROM}, {vALIDTO}, {aUTHORIZATIONID}"
+                $"EXEC dbo.netsqlazman_CreateDelegate {iTEMID}, {oWNERSID}, {oWNERSIDWHEREDEFINED}, {dELEGATEDUSERSID}, {sIDWHEREDEFINED}, {aUTHORIZATIONTYPE}, {vALIDFROM}, {vALIDTO}, {authId} out"
             );
+            aUTHORIZATIONID = (int)authId.Value;
 
             return result;
         }
@@ -715,16 +777,42 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
+        public DbSet<GetDBUsersResult> GetDBUsersResult { get; set; }
+
+        public IQueryable<GetDBUsersResult> GetDBUsers(string storeName, string applicationName, SqlBinary dBUserSid, string dBUserName)
+        {
+            var result = this.GetDBUsersResult.FromSqlInterpolated(
+                $"EXEC dbo.netsqlazman_GetDBUsers {storeName}, {applicationName}, {dBUserSid}, {dBUserName}"
+            );
+            return result;
+        }
+
         /**
         [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_GetDBUsers", IsComposable = true)]
-        public IQueryable<GetDBUsersResult> GetDBUsers([global::System.Data.Linq.Mapping.ParameterAttribute(Name = "StoreName", DbType = "NVarChar(255)")] string storeName, [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "ApplicationName", DbType = "NVarChar(255)")] string applicationName, [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "DBUserSid", DbType = "VarBinary(85)")] System.Data.Linq.Binary dBUserSid, [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "DBUserName", DbType = "NVarChar(255)")] string dBUserName)
+        public IQueryable<GetDBUsersResult> GetDBUsers(
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "StoreName", DbType = "NVarChar(255)")] string storeName, 
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "ApplicationName", DbType = "NVarChar(255)")] string applicationName, 
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "DBUserSid", DbType = "VarBinary(85)")] System.Data.Linq.Binary dBUserSid, 
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "DBUserName", DbType = "NVarChar(255)")] string dBUserName)
         {
             return this.CreateMethodCallQuery<GetDBUsersResult>(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), storeName, applicationName, dBUserSid, dBUserName);
         }
+        */
 
+        public bool GetNameFromSid(string storeName, string applicationName, SqlBinary sid, byte sidWhereDefined)
+        {
+            return netsqlazman_GetNameFromSid(storeName, applicationName, sid, sidWhereDefined);
+        }
+        public bool netsqlazman_GetNameFromSid(string storeName, string applicationName, SqlBinary sid, byte sidWhereDefined) => throw new NotSupportedException();
+
+        /**
         [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_GetNameFromSid", IsComposable = true)]
         [return: global::System.Data.Linq.Mapping.ParameterAttribute(DbType = "NVarChar(255)")]
-        public string GetNameFromSid([global::System.Data.Linq.Mapping.ParameterAttribute(Name = "StoreName", DbType = "NVarChar(255)")] string storeName, [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "ApplicationName", DbType = "NVarChar(255)")] string applicationName, [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "Sid", DbType = "VarBinary(85)")] System.Data.Linq.Binary sid, [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "SidWhereDefined", DbType = "TinyInt")] System.Nullable<byte> sidWhereDefined)
+        public string GetNameFromSid(
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "StoreName", DbType = "NVarChar(255)")] string storeName, 
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "ApplicationName", DbType = "NVarChar(255)")] string applicationName, 
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "Sid", DbType = "VarBinary(85)")] System.Data.Linq.Binary sid, 
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "SidWhereDefined", DbType = "TinyInt")] System.Nullable<byte> sidWhereDefined)
         {
             return ((string)(this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), storeName, applicationName, sid, sidWhereDefined).ReturnValue));
         }
@@ -769,6 +857,12 @@ namespace NetSqlAzMan.Database
         //    IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), storeId, sqlUserOrRole, netSqlAzManFixedServerRole);
         //    return ((int)(result.ReturnValue));
         //}
+
+        public bool IAmAdmin()
+        {
+            return netsqlazman_IAmAdmin();
+        }
+        public bool netsqlazman_IAmAdmin() => throw new NotSupportedException();
 
         /**
         [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_IAmAdmin", IsComposable = true)]
@@ -864,7 +958,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int ItemInsert(string name, string description, byte itemType, int bizRoleId, int applicationId)
+        public int ItemInsert(string name, string description, byte itemType, Nullable<int> bizRoleId, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_ItemInsert {name}, {description}, {itemType}, {bizRoleId}, {applicationId}"
@@ -898,10 +992,10 @@ namespace NetSqlAzMan.Database
         //    return this.CreateMethodCallQuery<ItemsHierarchyResult>(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())));
         //}
 
-        public int ItemsHierarchyDelete(int itemId, int memberId, int memberOfItemId, int applicationId)
+        public int ItemsHierarchyDelete(int itemId, int memberOfItemId, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
-                $"EXEC dbo.netsqlazman_ItemsHierarchyDelete {itemId}, {memberId}, {memberOfItemId}, {applicationId}"
+                $"EXEC dbo.netsqlazman_ItemsHierarchyDelete {itemId}, {memberOfItemId}, {applicationId}"
             );
 
             return result;
@@ -918,10 +1012,10 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int ItemsHierarchyInsert(int itemId, int memberId, int memberOfItemId, int applicationId)
+        public int ItemsHierarchyInsert(int itemId, int memberOfItemId, int applicationId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
-                $"EXEC dbo.netsqlazman_ItemsHierarchyInsert {itemId}, {memberId}, {memberOfItemId}, {applicationId}"
+                $"EXEC dbo.netsqlazman_ItemsHierarchyInsert {itemId}, {memberOfItemId}, {applicationId}"
             );
 
             return result;
@@ -960,14 +1054,30 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
+        public bool MergeAuthorizations(byte aUTH1, byte aUTH2)
+        {
+            return netsqlazman_MergeAuthorizations(aUTH1, aUTH2);
+        }
+        public bool netsqlazman_MergeAuthorizations(byte aUTH1, byte aUTH2) => throw new NotSupportedException();
+
         /**
         [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_MergeAuthorizations", IsComposable = true)]
         [return: global::System.Data.Linq.Mapping.ParameterAttribute(DbType = "TinyInt")]
-        public System.Nullable<byte> MergeAuthorizations([global::System.Data.Linq.Mapping.ParameterAttribute(Name = "AUTH1", DbType = "TinyInt")] System.Nullable<byte> aUTH1, [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "AUTH2", DbType = "TinyInt")] System.Nullable<byte> aUTH2)
+        public System.Nullable<byte> MergeAuthorizations(
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "AUTH1", DbType = "TinyInt")] System.Nullable<byte> aUTH1, 
+        [global::System.Data.Linq.Mapping.ParameterAttribute(Name = "AUTH2", DbType = "TinyInt")] System.Nullable<byte> aUTH2)
         {
             return ((System.Nullable<byte>)(this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), aUTH1, aUTH2).ReturnValue));
         }
+        */
 
+        public string NetSqlAzMan_DBVersion()
+        {
+            return netsqlazman_DBVersion();
+        }
+        public string netsqlazman_DBVersion() => throw new NotSupportedException();
+
+        /**
         [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_DBVersion", IsComposable = true)]
         [return: global::System.Data.Linq.Mapping.ParameterAttribute(DbType = "NVarChar(200)")]
         public string NetSqlAzMan_DBVersion()
@@ -1036,7 +1146,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int StoreAttributeDelete(int storeId, string storeAttributeId)
+        public int StoreAttributeDelete(int storeId, int storeAttributeId)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_StoreAttributeDelete {storeId}, {storeAttributeId}"
@@ -1139,7 +1249,7 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public int StoreGroupInsert(int storeId, int objectSid, string name, string description, string lDapQuery, byte groupType)
+        public int StoreGroupInsert(int storeId, SqlBinary objectSid, string name, string description, string lDapQuery, byte groupType)
         {
             var result = this.Database.ExecuteSqlInterpolated(
                 $"EXEC dbo.netsqlazman_StoreGroupInsert {storeId}, {objectSid}, {name}, {description}, {lDapQuery}, {groupType}"
@@ -1413,5 +1523,36 @@ namespace NetSqlAzMan.Database
         //    members_cur = ((System.Nullable<int>)(result.GetParameterValue(2)));
         //    return ((int)(result.ReturnValue));
         //}
+
+        partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
+        {
+            modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
+                .GetMethod(nameof(netsqlazman_CheckApplicationPermissions), new Type[] { typeof(int), typeof(byte) }))
+                .HasName("netsqlazman_CheckApplicationPermissions");
+            modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
+                .GetMethod(nameof(netsqlazman_CheckStorePermissions), new Type[] { typeof(int), typeof(byte) }))
+                .HasName("netsqlazman_CheckStorePermissions");
+            modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
+                .GetMethod(nameof(netsqlazman_DBVersion), new Type[] { }))
+                .HasName("netsqlazman_DBVersion");
+            modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
+                .GetMethod(nameof(netsqlazman_GetNameFromSid), new Type[] { typeof(string), typeof(string), typeof(SqlBinary), typeof(byte) }))
+                .HasName("netsqlazman_GetNameFromSid");
+            modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
+                .GetMethod(nameof(netsqlazman_IAmAdmin), new Type[] { }))
+                .HasName("netsqlazman_IAmAdmin");
+            modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
+                .GetMethod(nameof(netsqlazman_MergeAuthorizations), new Type[] { typeof(byte), typeof(byte) }))
+                .HasName("netsqlazman_MergeAuthorizations");
+
+            // Stored procedures
+            //modelBuilder.Entity<BuildUserPermissionCacheResult2>()
+            //    .HasNoKey()
+            //    .ToTable("netsqlazman_BuildUserPermissionCache", t => t.ExcludeFromMigrations());
+
+            modelBuilder.Entity<BuildUserPermissionCacheResult2>()
+                .HasNoKey()
+                .ToTable("netsqlazman_BuildUserPermissionCache", t => t.ExcludeFromMigrations());
+        }
     }
 }

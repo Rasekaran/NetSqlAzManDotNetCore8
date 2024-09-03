@@ -162,7 +162,7 @@ namespace NetSqlAzMan.Database
                 entity.HasIndex(e => e.ObjectSid, "IX_ApplicationGroups_1");
 
                 entity.Property(e => e.Description).HasMaxLength(1024);
-                entity.Property(e => e.LdapQuery)
+                entity.Property(e => e.LDapQuery)
                     .HasMaxLength(4000)
                     .HasColumnName("LDapQuery");
                 entity.Property(e => e.Name).HasMaxLength(255);
@@ -448,10 +448,10 @@ namespace NetSqlAzMan.Database
                     .IsDescending(true, false, true)
                     .IsClustered();
 
-                entity.Property(e => e.Ensdescription)
+                entity.Property(e => e.ENSDescription)
                     .HasMaxLength(4000)
                     .HasColumnName("ENSDescription");
-                entity.Property(e => e.Enstype)
+                entity.Property(e => e.ENSType)
                     .HasMaxLength(255)
                     .HasColumnName("ENSType");
                 entity.Property(e => e.LogDateTime).HasColumnType("datetime");
@@ -555,7 +555,7 @@ namespace NetSqlAzMan.Database
                 entity.HasIndex(e => new { e.StoreId, e.Name }, "StoreGroups_StoreId_Name_Unique_Index").IsUnique();
 
                 entity.Property(e => e.Description).HasMaxLength(1024);
-                entity.Property(e => e.LdapQuery)
+                entity.Property(e => e.LDapQuery)
                     .HasMaxLength(4000)
                     .HasColumnName("LDapQuery");
                 entity.Property(e => e.Name).HasMaxLength(255);

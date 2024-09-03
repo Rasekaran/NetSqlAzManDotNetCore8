@@ -10,6 +10,7 @@ using NetSqlAzMan.DirectoryServices;
 using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
 using NetSqlAzMan.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace NetSqlAzMan
 {
@@ -343,7 +344,7 @@ namespace NetSqlAzMan
         {
             if (this.groupType != GroupType.Basic)
                 throw new InvalidOperationException("Method not supported for LDAP Groups");
-            var agm = (from f in this.db.ApplicationGroupMembers()
+            var agm = (from f in this.db.NetsqlazmanApplicationGroupMembersTables
                        where
                        (
                        this.application.Store.Storage.Mode == NetSqlAzManMode.Administrator && f.WhereDefined != (byte)WhereDefined.Local
@@ -357,7 +358,7 @@ namespace NetSqlAzMan
             IAzManApplicationGroupMember[] applicationGroupMembers = new SqlAzManApplicationGroupMember[agm.Count];
             foreach (var row in agm)
             {
-                applicationGroupMembers[index] = new SqlAzManApplicationGroupMember(this.db, this, row.ApplicationGroupMemberId.Value, new SqlAzManSID(row.ObjectSid.ToArray(), row.WhereDefined == (byte)(WhereDefined.Database)), (WhereDefined)row.WhereDefined, row.IsMember.Value, this.ens);
+                applicationGroupMembers[index] = new SqlAzManApplicationGroupMember(this.db, this, row.ApplicationGroupMemberId, new SqlAzManSID(row.ObjectSid.ToArray(), row.WhereDefined == (byte)(WhereDefined.Database)), (WhereDefined)row.WhereDefined, row.IsMember, this.ens);
                 if (this.ens != null) this.ens.AddPublisher(applicationGroupMembers[index]);
                 index++;
             }
@@ -373,8 +374,8 @@ namespace NetSqlAzMan
         {
             if (this.groupType != GroupType.Basic)
                 throw new InvalidOperationException("Method not supported for LDAP Groups");
-            ApplicationGroupMembersResult agm;
-            if ((agm = (from t in this.db.ApplicationGroupMembers() where t.ApplicationGroupId == this.applicationGroupId && t.ObjectSid == sid.BinaryValue select t).FirstOrDefault()) != null)
+            NetsqlazmanApplicationGroupMembersTable agm;
+            if ((agm = (from t in this.db.NetsqlazmanApplicationGroupMembersTables where t.ApplicationGroupId == this.applicationGroupId && t.ObjectSid == sid.BinaryValue select t).FirstOrDefault()) != null)
             {
                 if (this.application.Store.Storage.Mode == NetSqlAzManMode.Administrator && agm.WhereDefined == (byte)WhereDefined.Local)
                 {
@@ -382,7 +383,7 @@ namespace NetSqlAzMan
                 }
                 else
                 {
-                    IAzManApplicationGroupMember result = new SqlAzManApplicationGroupMember(this.db, this, agm.ApplicationGroupMemberId.Value, new SqlAzManSID(agm.ObjectSid.ToArray(), agm.WhereDefined == (byte)(WhereDefined.Database)), (WhereDefined)(agm.WhereDefined), agm.IsMember.Value, this.ens);
+                    IAzManApplicationGroupMember result = new SqlAzManApplicationGroupMember(this.db, this, agm.ApplicationGroupMemberId, new SqlAzManSID(agm.ObjectSid.ToArray(), agm.WhereDefined == (byte)(WhereDefined.Database)), (WhereDefined)(agm.WhereDefined), agm.IsMember, this.ens);
                     if (this.ens != null) this.ens.AddPublisher(result);
                     return result;
                 }
@@ -401,7 +402,7 @@ namespace NetSqlAzMan
         {
             if (this.groupType != GroupType.Basic)
                 throw new InvalidOperationException("Method not supported for LDAP Groups");
-            var agnm = (from f in this.db.ApplicationGroupMembers()
+            var agnm = (from f in this.db.NetsqlazmanApplicationGroupMembersTables
                         where
                         (this.application.Store.Storage.Mode == NetSqlAzManMode.Administrator && f.WhereDefined != (byte)WhereDefined.Local
                         ||
@@ -413,7 +414,7 @@ namespace NetSqlAzMan
             IAzManApplicationGroupMember[] applicationGroupNonMembers = new SqlAzManApplicationGroupMember[agnm.Count];
             foreach (var row in agnm)
             {
-                applicationGroupNonMembers[index] = new SqlAzManApplicationGroupMember(this.db, this, row.ApplicationGroupMemberId.Value, new SqlAzManSID(row.ObjectSid.ToArray(), row.WhereDefined == (byte)(WhereDefined.Database)), (WhereDefined)row.WhereDefined, row.IsMember.Value, this.ens);
+                applicationGroupNonMembers[index] = new SqlAzManApplicationGroupMember(this.db, this, row.ApplicationGroupMemberId, new SqlAzManSID(row.ObjectSid.ToArray(), row.WhereDefined == (byte)(WhereDefined.Database)), (WhereDefined)row.WhereDefined, row.IsMember, this.ens);
                 if (this.ens != null) this.ens.AddPublisher(applicationGroupNonMembers[index]);
                 index++;
             }
@@ -428,7 +429,7 @@ namespace NetSqlAzMan
         {
             if (this.groupType != GroupType.Basic)
                 throw new InvalidOperationException("Method not supported for LDAP Groups");
-            var agam = (from f in this.db.ApplicationGroupMembers()
+            var agam = (from f in this.db.NetsqlazmanApplicationGroupMembersTables
                         where
                         (this.application.Store.Storage.Mode == NetSqlAzManMode.Administrator && f.WhereDefined != (byte)WhereDefined.Local
                         ||
@@ -440,7 +441,7 @@ namespace NetSqlAzMan
             IAzManApplicationGroupMember[] applicationGroupAllMembers = new SqlAzManApplicationGroupMember[agam.Count];
             foreach (var row in agam)
             {
-                applicationGroupAllMembers[index] = new SqlAzManApplicationGroupMember(this.db, this, row.ApplicationGroupMemberId.Value, new SqlAzManSID(row.ObjectSid.ToArray(), row.WhereDefined == (byte)(WhereDefined.Database)), (WhereDefined)row.WhereDefined, row.IsMember.Value, this.ens);
+                applicationGroupAllMembers[index] = new SqlAzManApplicationGroupMember(this.db, this, row.ApplicationGroupMemberId, new SqlAzManSID(row.ObjectSid.ToArray(), row.WhereDefined == (byte)(WhereDefined.Database)), (WhereDefined)row.WhereDefined, row.IsMember, this.ens);
                 if (this.ens != null) this.ens.AddPublisher(applicationGroupAllMembers[index]);
                 index++;
             }
@@ -502,7 +503,7 @@ namespace NetSqlAzMan
         /// </returns>
         internal bool isAMemberOfGroup(bool groupType, byte[] GroupSid, bool netSqlAzManMode, string rootDsePath, byte[] token, int userGroupsCount)
         {
-            SqlConnection conn = new SqlConnection(this.db.Connection.ConnectionString);
+            SqlConnection conn = new SqlConnection(this.db.Database.GetDbConnection().ConnectionString);
             conn.Open();
             bool result = false;
             try

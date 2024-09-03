@@ -15,7 +15,7 @@ public partial class NetsqlazmanApplicationGroupsTable
 
     public string Description { get; set; } = null!;
 
-    public string? LdapQuery { get; set; }
+    public string? LDapQuery { get; set; }
 
     public byte GroupType { get; set; }
 

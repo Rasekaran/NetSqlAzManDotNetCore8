@@ -239,7 +239,7 @@ namespace NetSqlAzMan
                 bool isLocal;
                 DirectoryServicesUtils.GetMemberInfo(owner.StringValue, out memberName, out isLocal);
                 WhereDefined ownerSidWhereDefined = isLocal ? WhereDefined.Local : WhereDefined.LDAP;
-                this.db.AuthorizationUpdate(this.item.ItemId, owner.BinaryValue, (byte)ownerSidWhereDefined, sid.BinaryValue, (byte)sidWhereDefined, (byte)authorizationType, (validFrom.HasValue ? validFrom.Value : new DateTime?()), (validTo.HasValue ? validTo.Value : new DateTime?()), this.authorizationId, this.item.Application.ApplicationId);
+                this.db.AuthorizationUpdate(this.item.ItemId, owner.BinaryValue, (byte)ownerSidWhereDefined, sid.BinaryValue, (byte)sidWhereDefined, (byte)authorizationType, (validFrom.HasValue ? validFrom.Value : new DateTime()), (validTo.HasValue ? validTo.Value : new DateTime()), this.authorizationId, this.item.Application.ApplicationId);
                 this.owner = new SqlAzManSID(owner.BinaryValue);
                 this.ownerSidWhereDefined = ownerSidWhereDefined;
                 this.sid = sid;
@@ -267,7 +267,7 @@ namespace NetSqlAzMan
         public IAzManAttribute<IAzManAuthorization>[] GetAttributes()
         {
             IAzManAttribute<IAzManAuthorization>[] attributes;
-            var attrs = (from a in this.db.AuthorizationAttributes()
+            var attrs = (from a in this.db.NetsqlazmanAuthorizationAttributesTables
                          where a.AuthorizationId == this.authorizationId
                          select a).ToList();
 
@@ -275,7 +275,7 @@ namespace NetSqlAzMan
             int index = 0;
             foreach (var row in attrs)
             {
-                attributes[index] = new SqlAzManAuthorizationAttribute(this.db, this, row.AuthorizationAttributeId.Value, row.AttributeKey, row.AttributeValue, this.ens);
+                attributes[index] = new SqlAzManAuthorizationAttribute(this.db, this, row.AuthorizationAttributeId, row.AttributeKey, row.AttributeValue, this.ens);
                 if (this.ens != null) this.ens.AddPublisher(attributes[index]);
                 index++;
             }
@@ -289,10 +289,10 @@ namespace NetSqlAzMan
         /// <returns></returns>
         public IAzManAttribute<IAzManAuthorization> GetAttribute(string key)
         {
-            AuthorizationAttributesResult attr;
-            if ((attr = (from t in this.db.AuthorizationAttributes() where t.AuthorizationId == this.authorizationId && t.AttributeKey == key select t).FirstOrDefault()) != null)
+            NetsqlazmanAuthorizationAttributesTable attr;
+            if ((attr = (from t in this.db.NetsqlazmanAuthorizationAttributesTables where t.AuthorizationId == this.authorizationId && t.AttributeKey == key select t).FirstOrDefault()) != null)
             {
-                IAzManAttribute<IAzManAuthorization> result = new SqlAzManAuthorizationAttribute(this.db, this, attr.AuthorizationAttributeId.Value, attr.AttributeKey, attr.AttributeValue, this.ens);
+                IAzManAttribute<IAzManAuthorization> result = new SqlAzManAuthorizationAttribute(this.db, this, attr.AuthorizationAttributeId, attr.AttributeKey, attr.AttributeValue, this.ens);
                 if (this.ens != null) this.ens.AddPublisher(result);
                 return result;
             }
@@ -315,7 +315,7 @@ namespace NetSqlAzMan
                 //db.tAuthorizationattributes.Insert(this.authorizationId, key, value);
                 int authorizationAttributeId = 0;
                 authorizationAttributeId = this.db.AuthorizationAttributeInsert(this.authorizationId, key, value, this.item.Application.ApplicationId);
-                this.db.SubmitChanges();
+                this.db.SaveChanges();
                 IAzManAttribute<IAzManAuthorization> result = new SqlAzManAuthorizationAttribute(this.db, this, authorizationAttributeId, key, value, this.ens);
                 this.raiseAuthorizationAttributeCreated(this, result);
                 if (this.ens != null) this.ens.AddPublisher(result);

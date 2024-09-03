@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Principal;
 using NetSqlAzMan.Interfaces;
 using NetSqlAzMan.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace NetSqlAzMan.Logging
 {
@@ -41,7 +42,7 @@ namespace NetSqlAzMan.Logging
                 {
                     logOnDb = typedStorage.LogOnDb;
                     logOnEventLog = typedStorage.LogOnEventLog;
-                    connectionString = typedStorage.db.Connection.ConnectionString;
+                    connectionString = typedStorage.db.Database.GetDbConnection().ConnectionString;
                     instanceGuid = typedStorage.instanceGuid;
                     transactionGuid = typedStorage.transactionGuid;
                     operationCounter = ++typedStorage.operationCounter;
@@ -73,8 +74,8 @@ namespace NetSqlAzMan.Logging
                     NTAccount nta = new NTAccount(((System.Threading.Thread.CurrentPrincipal.Identity as WindowsIdentity) ?? WindowsIdentity.GetCurrent()).Name);
                     SecurityIdentifier sid = (SecurityIdentifier)nta.Translate(typeof(SecurityIdentifier));
                     string winIdentity = String.Format("{0} ({1}", nta.Value, sid.Value);
-                    NetSqlAzManStorageContext db = new NetSqlAzManStorageContext(connectionString);
-                    NetSqlAzMan.LINQ.LogTable log = new LogTable();
+                    NetSqlAzManStorageContext db = new NetSqlAzManStorageContext();
+                    NetsqlazmanLogTable log = new NetsqlazmanLogTable();
                     log.LogDateTime = now;
                     log.WindowsIdentity = winIdentity;
                     log.MachineName = Environment.MachineName;
@@ -84,8 +85,8 @@ namespace NetSqlAzMan.Logging
                     log.ENSType = ENSType;
                     log.ENSDescription = message;
                     log.LogType = logType;
-                    db.LogTables.InsertOnSubmit(log);
-                    db.SubmitChanges();
+                    db.NetsqlazmanLogTables.Add(log);
+                    db.SaveChanges();
                 }
                 if (logOnEventLog)
                 {

@@ -34,7 +34,7 @@ namespace NetSqlAzMan
                 string oldKey = this.key;
                 string oldValue = this.value;
                 this.db.ItemAttributeUpdate(key, value, this.attributeId, this.owner.Application.ApplicationId);
-                this.db.SubmitChanges();
+                this.db.SaveChanges();
                 this.raiseAttributeUpdated(this, oldKey, oldValue);
             }
         }

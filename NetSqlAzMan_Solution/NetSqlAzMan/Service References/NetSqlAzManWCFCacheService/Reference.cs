@@ -475,17 +475,17 @@ namespace NetSqlAzMan.NetSqlAzManWCFCacheService {
         public CacheServiceClient() {
         }
         
-        public CacheServiceClient(string endpointConfigurationName) : 
-                base(endpointConfigurationName) {
-        }
+        //public CacheServiceClient(string endpointConfigurationName) : 
+        //        base(endpointConfigurationName) {
+        //}
         
-        public CacheServiceClient(string endpointConfigurationName, string remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
-        }
+        //public CacheServiceClient(string endpointConfigurationName, string remoteAddress) : 
+        //        base(endpointConfigurationName, remoteAddress) {
+        //}
         
-        public CacheServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-                base(endpointConfigurationName, remoteAddress) {
-        }
+        //public CacheServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
+        //        base(endpointConfigurationName, remoteAddress) {
+        //}
         
         public CacheServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
                 base(binding, remoteAddress) {

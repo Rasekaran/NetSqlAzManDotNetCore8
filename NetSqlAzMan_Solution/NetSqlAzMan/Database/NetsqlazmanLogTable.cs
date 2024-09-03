@@ -21,9 +21,9 @@ public partial class NetsqlazmanLogTable
 
     public int OperationCounter { get; set; }
 
-    public string Enstype { get; set; } = null!;
+    public string ENSType { get; set; } = null!;
 
-    public string Ensdescription { get; set; } = null!;
+    public string ENSDescription { get; set; } = null!;
 
     public string LogType { get; set; } = null!;
 }

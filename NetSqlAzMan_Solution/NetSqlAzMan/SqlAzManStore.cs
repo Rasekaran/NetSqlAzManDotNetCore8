@@ -10,6 +10,8 @@ using NetSqlAzMan.ENS;
 using NetSqlAzMan.Interfaces;
 using NetSqlAzMan.Database;
 using NetSqlAzMan.Utilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace NetSqlAzMan
 {
@@ -325,8 +327,8 @@ namespace NetSqlAzMan
         /// <returns></returns>
         public IAzManApplication GetApplication(string applicationName)
         {
-            ApplicationsResult app;
-            if ((app = (from t in this.db.Applications() where t.StoreId == this.storeId && t.Name == applicationName select t).FirstOrDefault()) != null)
+            NetsqlazmanApplicationsTable app;
+            if ((app = (from t in this.db.NetsqlazmanApplicationsTables where t.StoreId == this.storeId && t.Name == applicationName select t).FirstOrDefault()) != null)
             {
                 byte netsqlazmanFixedServerRole = 0;
                 if (this.IAmAdmin)
@@ -342,7 +344,7 @@ namespace NetSqlAzMan
                     else if (r2.HasValue && r2.Value)
                         netsqlazmanFixedServerRole = 1;
                 }
-                IAzManApplication application = new SqlAzManApplication(this.db, this, app.ApplicationId.Value, applicationName, app.Description, netsqlazmanFixedServerRole, this.ens);
+                IAzManApplication application = new SqlAzManApplication(this.db, this, app.ApplicationId, applicationName, app.Description, netsqlazmanFixedServerRole, this.ens);
                 this.raiseApplicationOpened(application);
                 if (this.ens != null)
                     this.ens.AddPublisher(application);
@@ -360,7 +362,7 @@ namespace NetSqlAzMan
         /// <returns></returns>
         public IAzManApplication[] GetApplications()
         {
-            var ds = (from tf in this.db.Applications()
+            var ds = (from tf in this.db.NetsqlazmanApplicationsTables
                       where tf.StoreId == this.storeId
                       orderby tf.Name
                       select tf).ToList();
@@ -374,14 +376,14 @@ namespace NetSqlAzMan
                 }
                 else
                 {
-                    var r1 = this.db.CheckApplicationPermissions(row.ApplicationId.Value, 2);
-                    var r2 = this.db.CheckApplicationPermissions(row.ApplicationId.Value, 1);
+                    var r1 = this.db.CheckApplicationPermissions(row.ApplicationId, 2);
+                    var r2 = this.db.CheckApplicationPermissions(row.ApplicationId, 1);
                     if (r1.HasValue && r1.Value)
                         netsqlazmanFixedServerRole = 2;
                     else if (r2.HasValue && r2.Value)
                         netsqlazmanFixedServerRole = 1;
                 }
-                IAzManApplication app = new SqlAzManApplication(this.db, this, row.ApplicationId.Value, row.Name, row.Description, netsqlazmanFixedServerRole, this.ens);
+                IAzManApplication app = new SqlAzManApplication(this.db, this, row.ApplicationId, row.Name, row.Description, netsqlazmanFixedServerRole, this.ens);
                 applications.Add(app);
                 this.raiseApplicationOpened(app);
                 if (this.ens != null)
@@ -434,7 +436,7 @@ namespace NetSqlAzMan
         /// </returns>
         public bool HasStoreGroups()
         {
-            return this.db.StoreGroups().Any(p => p.StoreId == this.storeId);
+            return this.db.NetsqlazmanStoreGroupsTables.Any(p => p.StoreId == this.storeId);
         }
 
         /// <summary>
@@ -443,7 +445,7 @@ namespace NetSqlAzMan
         /// <returns></returns>
         public IAzManStoreGroup[] GetStoreGroups()
         {
-            var ds = (from tf in this.db.StoreGroups()
+            var ds = (from tf in this.db.NetsqlazmanStoreGroupsTables
                       where tf.StoreId == this.storeId
                       orderby tf.Name
                       select tf).ToList();
@@ -451,7 +453,7 @@ namespace NetSqlAzMan
             IAzManStoreGroup[] storeGroups = new SqlAzManStoreGroup[ds.Count()];
             foreach (var row in ds)
             {
-                storeGroups[index] = new SqlAzManStoreGroup(this.db, this, row.StoreGroupId.Value, new SqlAzManSID(row.ObjectSid.ToArray()), row.Name, row.Description, row.LDapQuery, (GroupType)row.GroupType.Value, this.ens);
+                storeGroups[index] = new SqlAzManStoreGroup(this.db, this, row.StoreGroupId, new SqlAzManSID(row.ObjectSid.ToArray()), row.Name, row.Description, row.LDapQuery, (GroupType)row.GroupType, this.ens);
                 if (this.ens != null)
                     this.ens.AddPublisher(storeGroups[index]);
                 index++;
@@ -466,14 +468,14 @@ namespace NetSqlAzMan
         /// <returns></returns>
         public IAzManStoreGroup GetStoreGroup(string name)
         {
-            StoreGroupsResult sgr;
-            if ((sgr = (from tf in this.db.StoreGroups() where tf.Name == name && tf.StoreId == this.storeId select tf).FirstOrDefault()) != null)
+            NetsqlazmanStoreGroupsTable sgr;
+            if ((sgr = (from tf in this.db.NetsqlazmanStoreGroupsTables where tf.Name == name && tf.StoreId == this.storeId select tf).FirstOrDefault()) != null)
             {
-                int storeGroupid = sgr.StoreGroupId.Value;
+                int storeGroupid = sgr.StoreGroupId;
                 IAzManSid objectSid = new SqlAzManSID(sgr.ObjectSid.ToArray());
                 string description = sgr.Description;
                 string lDapQuery = sgr.LDapQuery;
-                GroupType groupType = (GroupType)sgr.GroupType.Value;
+                GroupType groupType = (GroupType)sgr.GroupType;
                 IAzManStoreGroup result = new SqlAzManStoreGroup(this.db, this, storeGroupid, objectSid, name, description, lDapQuery, groupType, this.ens);
                 if (this.ens != null)
                     this.ens.AddPublisher(result);
@@ -491,8 +493,8 @@ namespace NetSqlAzMan
         /// <returns></returns>
         public IAzManStoreGroup GetStoreGroup(IAzManSid sid)
         {
-            StoreGroupsResult sgr;
-            if ((sgr = (from t in this.db.StoreGroups() where t.ObjectSid == sid.BinaryValue && t.StoreId == this.storeId select t).FirstOrDefault()) != null)
+            NetsqlazmanStoreGroupsTable sgr;
+            if ((sgr = (from t in this.db.NetsqlazmanStoreGroupsTables where t.ObjectSid == sid.BinaryValue && t.StoreId == this.storeId select t).FirstOrDefault()) != null)
             {
                 IAzManStoreGroup result = this.GetStoreGroup(sgr.Name);
                 if (this.ens != null)
@@ -519,14 +521,14 @@ namespace NetSqlAzMan
         public IAzManAttribute<IAzManStore>[] GetAttributes()
         {
             IAzManAttribute<IAzManStore>[] attributes;
-            var ds = (from tf in this.db.StoreAttributes()
+            var ds = (from tf in this.db.NetsqlazmanStoreAttributesTables
                       where tf.StoreId == this.storeId
                       select tf).ToList();
             attributes = new SqlAzManStoreAttribute[ds.Count];
             int index = 0;
             foreach (var row in ds)
             {
-                attributes[index] = new SqlAzManStoreAttribute(this.db, this, row.StoreAttributeId.Value, row.AttributeKey, row.AttributeValue, this.ens);
+                attributes[index] = new SqlAzManStoreAttribute(this.db, this, row.StoreAttributeId, row.AttributeKey, row.AttributeValue, this.ens);
                 if (this.ens != null)
                     this.ens.AddPublisher(attributes[index]);
                 index++;
@@ -541,10 +543,10 @@ namespace NetSqlAzMan
         /// <returns></returns>
         public IAzManAttribute<IAzManStore> GetAttribute(string key)
         {
-            StoreAttributesResult sar;
-            if ((sar = (from t in this.db.StoreAttributes() where t.StoreId == this.storeId && t.AttributeKey == key select t).FirstOrDefault()) != null)
+            NetsqlazmanStoreAttributesTable sar;
+            if ((sar = (from t in this.db.NetsqlazmanStoreAttributesTables where t.StoreId == this.storeId && t.AttributeKey == key select t).FirstOrDefault()) != null)
             {
-                IAzManAttribute<IAzManStore> result = new SqlAzManStoreAttribute(this.db, this, sar.StoreAttributeId.Value, sar.AttributeKey, sar.AttributeValue, this.ens);
+                IAzManAttribute<IAzManStore> result = new SqlAzManStoreAttribute(this.db, this, sar.StoreAttributeId, sar.AttributeKey, sar.AttributeValue, this.ens);
                 if (this.ens != null)
                     this.ens.AddPublisher(result);
                 return result;
@@ -975,8 +977,8 @@ namespace NetSqlAzMan
                 roleName = "NetSqlAzMan_Users";
             else if (netsqlazmanfixedserverrole == 2)
                 roleName = "NetSqlAzMan_Managers";
-            SqlCommand cmd = (SqlCommand)this.db.Connection.CreateCommand();
-            cmd.Transaction = (SqlTransaction)this.db.Transaction;
+            SqlCommand cmd = (SqlCommand)this.db.Database.GetDbConnection().CreateCommand();
+            cmd.Transaction = (SqlTransaction)this.db.Database.CurrentTransaction.GetDbTransaction();
             cmd.CommandText = "dbo.netsqlazman_helplogins";
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@rolename", roleName);
@@ -984,7 +986,7 @@ namespace NetSqlAzMan
 
             DataTable logins = new DataTable();
             da.Fill(logins);
-            var permissions = from t in this.db.StorePermissionsTable
+            var permissions = from t in this.db.NetsqlazmanStorePermissionsTables
                               where t.StoreId == this.storeId && t.NetSqlAzManFixedServerRole == netsqlazmanfixedserverrole
                               select t;
             foreach (DataRow drLogins in logins.Rows)
