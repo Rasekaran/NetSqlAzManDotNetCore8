@@ -383,7 +383,7 @@ namespace NetSqlAzMan
                     scsb.PersistSecurityInfo = true;
                 this.connectionString = scsb.ToString();
                 this.db = GetNetSqlAzManStorageContext();
-                this.db.Database.SetCommandTimeout(this.StorageTimeOut);
+                //this.db.Database.SetCommandTimeout(this.StorageTimeOut);
             }
         }
 

@@ -1,17 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using NetSqlAzMan.Database;
 using NetSqlAzMan.DbExt;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
-using System.Data.SqlTypes;
+//using System.Data.SqlClient;
+//using System.Data.SqlTypes;
 using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+//using System.Net;
+//using System.Reflection;
+//using System.Threading.Tasks;
+//using System.Windows.Forms;
 
 
 namespace NetSqlAzMan.Database
@@ -56,7 +57,7 @@ namespace NetSqlAzMan.Database
                 da.SelectCommand.Parameters.Add(pApplicationName);
                 da.SelectCommand.Parameters.Add(pDBUserSID);
                 da.SelectCommand.Parameters.Add(pDBUserName);
-                da.SelectCommand.Transaction = this.Database.CurrentTransaction.GetDbTransaction() as SqlTransaction;
+                //da.SelectCommand.Transaction = this.Database.CurrentTransaction.GetDbTransaction() as SqlTransaction;
                 da.Fill(result);
             }
             return result;
@@ -649,11 +650,27 @@ namespace NetSqlAzMan.Database
         //    return ((IMultipleResults)(result.ReturnValue));
         //}
 
+        public class CheckApplicationPermissionsResult
+        {
+            public bool HasApplicationPermission { get; set; }
+        }
+
+        public virtual DbSet<CheckApplicationPermissionsResult> CheckApplicationPermissionsDbSet { get; set; }
+
         public Nullable<bool> CheckApplicationPermissions(int aPPLICATIONID, byte rOLEID)
         {
-            return netsqlazman_CheckApplicationPermissions(aPPLICATIONID, rOLEID);
+            //var totalPrice = NetsqlazmanApplicationPermissionsTables.Where(a => a.ApplicationId == aPPLICATIONID && a.)
+            //    .Where(o => o.OrderId == orderId)
+            //    .Select(o => context.GetTotalPrice(o.OrderId))
+            //    .FirstOrDefault();
+            //return netsqlazman_CheckApplicationPermissions(aPPLICATIONID, rOLEID);
+            return CheckApplicationPermissionsDbSet
+                .FromSqlInterpolated($"SELECT dbo.netsqlazman_CheckApplicationPermissions({aPPLICATIONID},{rOLEID}) as HasApplicationPermission")
+                .FirstOrDefault().HasApplicationPermission;
         }
-        public bool netsqlazman_CheckApplicationPermissions(int aPPLICATIONID, byte rOLEID) => throw new NotSupportedException();
+
+        //[DbFunction("netsqlazman_CheckApplicationPermissions", "dbo")]
+        //public bool netsqlazman_CheckApplicationPermissions(int aPPLICATIONID, byte rOLEID) => throw new NotSupportedException();
 
         //[global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_CheckApplicationPermissions", IsComposable = true)]
         //[return: global::System.Data.Linq.Mapping.ParameterAttribute(DbType = "Bit")]
@@ -866,11 +883,30 @@ namespace NetSqlAzMan.Database
         //    return ((int)(result.ReturnValue));
         //}
 
-        public bool IAmAdmin()
+        public class IAmAdminResult
         {
-            return netsqlazman_IAmAdmin();
+            public bool AmIAdmin { get; set; }
         }
-        public bool netsqlazman_IAmAdmin() => throw new NotSupportedException();
+
+        public virtual DbSet<IAmAdminResult> IAmAdminDbSet { get; set; }
+
+        public Nullable<bool> IAmAdmin()
+        {
+            //var totalPrice = NetsqlazmanApplicationPermissionsTables.Where(a => a.ApplicationId == aPPLICATIONID && a.)
+            //    .Where(o => o.OrderId == orderId)
+            //    .Select(o => context.GetTotalPrice(o.OrderId))
+            //    .FirstOrDefault();
+            //return netsqlazman_CheckApplicationPermissions(aPPLICATIONID, rOLEID);
+            return IAmAdminDbSet
+                .FromSqlInterpolated($"SELECT dbo.netsqlazman_IAmAdmin() as AmIAdmin")
+                .FirstOrDefault().AmIAdmin;
+        }
+
+        //public bool IAmAdmin()
+        //{
+        //    return netsqlazman_IAmAdmin();
+        //}
+        //public bool netsqlazman_IAmAdmin() => throw new NotSupportedException();
 
         /**
         [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_IAmAdmin", IsComposable = true)]
@@ -1534,9 +1570,10 @@ namespace NetSqlAzMan.Database
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
-                .GetMethod(nameof(netsqlazman_CheckApplicationPermissions), new Type[] { typeof(int), typeof(byte) }))
-                .HasName("netsqlazman_CheckApplicationPermissions");
+            //modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
+            //    .GetMethod(nameof(netsqlazman_CheckApplicationPermissions), new Type[] { typeof(int), typeof(byte) }))
+            //    .HasName("netsqlazman_CheckApplicationPermissions")
+            //    .HasSchema("dbo");
             modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
                 .GetMethod(nameof(netsqlazman_CheckStorePermissions), new Type[] { typeof(int), typeof(byte) }))
                 .HasName("netsqlazman_CheckStorePermissions");
@@ -1546,12 +1583,15 @@ namespace NetSqlAzMan.Database
             modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
                 .GetMethod(nameof(netsqlazman_GetNameFromSid), new Type[] { typeof(string), typeof(string), typeof(byte[]), typeof(byte) }))
                 .HasName("netsqlazman_GetNameFromSid");
-            modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
-                .GetMethod(nameof(netsqlazman_IAmAdmin), new Type[] { }))
-                .HasName("netsqlazman_IAmAdmin");
+            //modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
+            //    .GetMethod(nameof(netsqlazman_IAmAdmin), new Type[] { }))
+            //    .HasName("netsqlazman_IAmAdmin");
             modelBuilder.HasDbFunction(typeof(NetSqlAzManStorageContext)
                 .GetMethod(nameof(netsqlazman_MergeAuthorizations), new Type[] { typeof(byte), typeof(byte) }))
                 .HasName("netsqlazman_MergeAuthorizations");
+
+            modelBuilder.Entity<CheckApplicationPermissionsResult>(e => e.HasNoKey());
+            modelBuilder.Entity<IAmAdminResult>(e => e.HasNoKey());
 
             // Stored procedures
             //modelBuilder.Entity<BuildUserPermissionCacheResult2>()
