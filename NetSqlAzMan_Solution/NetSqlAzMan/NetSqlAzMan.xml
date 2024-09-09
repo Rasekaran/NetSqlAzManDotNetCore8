@@ -612,10 +612,10 @@
             <returns></returns>
         </member>
         <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.CreateDelegate(System.Int32,System.Byte[],System.Byte,System.Byte[],System.Byte,System.Byte,System.DateTime,System.DateTime,System.Int32@)" -->
-        <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.GetNameFromSid(System.String,System.String,System.Byte[],System.Byte)" -->
+        <!-- Badly formed XML comment ignored for member "T:NetSqlAzMan.Database.NetSqlAzManStorageContext.GetNameFromSidResult" -->
         <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.GrantApplicationAccess(System.Int32,System.String,System.Byte)" -->
         <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.ItemAttributeDelete(System.Int32,System.Int32)" -->
-        <!-- Badly formed XML comment ignored for member "M:NetSqlAzMan.Database.NetSqlAzManStorageContext.NetSqlAzMan_DBVersion" -->
+        <!-- Badly formed XML comment ignored for member "T:NetSqlAzMan.Database.NetSqlAzManStorageContext.DBVersionResult" -->
         <member name="M:NetSqlAzMan.Database.NetSqlAzManStorageContext.ReloadBizRule(System.Int32,System.Int32,System.Int32)">
                     [global::System.Data.Linq.Mapping.FunctionAttribute(Name = "dbo.netsqlazman_DBVersion", IsComposable = true)]
                     [return: global::System.Data.Linq.Mapping.ParameterAttribute(DbType = "NVarChar(200)")]
